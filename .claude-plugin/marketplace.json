@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "itsribbZ-godspeed",
+  "description": "Structured prompt protocol pack for Claude Code. Ships a skill + hooks that load a detailed instruction set when the word 'godspeed' appears in a prompt.",
+  "owner": {
+    "name": "Ribbz",
+    "url": "https://github.com/itsribbZ"
+  },
+  "plugins": [
+    {
+      "name": "godspeed",
+      "description": "Instruction-set skill that activates when the word 'godspeed' appears in any prompt. Ships a fuzzy-match trigger hook and telemetry hooks. Optional pro features require separate Toke install.",
+      "source": "./plugins/godspeed",
+      "category": "development",
+      "homepage": "https://github.com/itsribbZ/godspeed",
+      "keywords": ["prompt-protocol", "skill", "orchestration-prompt"]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate marketplace.json
+        run: python -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
+      - name: Validate plugin.json
+        run: python -c "import json; json.load(open('plugins/godspeed/.claude-plugin/plugin.json'))"
+      - name: Validate hooks.json
+        run: python -c "import json; json.load(open('plugins/godspeed/hooks/hooks.json'))"
+      - name: Validate problem_class_routing.json
+        run: python -c "import json; json.load(open('plugins/godspeed/skills/godspeed/problem_class_routing.json'))"
+      - name: Check SKILL.md exists and non-empty
+        run: test -s plugins/godspeed/skills/godspeed/SKILL.md
+      - name: Check all hooks referenced in hooks.json exist on disk
+        run: |
+          python -c "
+          import json, os, sys
+          h = json.load(open('plugins/godspeed/hooks/hooks.json'))
+          missing = []
+          for event, entries in h.items():
+              for entry in entries:
+                  for hook in entry.get('hooks', []):
+                      cmd = hook.get('command', '')
+                      if '\${CLAUDE_PLUGIN_ROOT}' in cmd:
+                          rel = cmd.split('\${CLAUDE_PLUGIN_ROOT}/')[1].rstrip('\"')
+                          full = f'plugins/godspeed/{rel}'
+                          if not os.path.exists(full):
+                              missing.append(full)
+          if missing:
+              print('Missing:', missing)
+              sys.exit(1)
+          print('All hook scripts present.')
+          "
