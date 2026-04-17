@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Toke installer — macOS / Linux / Windows (Git Bash, WSL)
+# Godspeed / Toke installer — macOS / Linux / Windows (Git Bash, WSL)
+#
+# Run from the godspeed/ repo root. The engine lives in ./toke/.
 #
 # What this does:
-#   1. Sets TOKE_ROOT to the absolute path of this checkout
-#   2. Copies all skills from ./skills/ into ~/.claude/skills/
-#   3. Copies all slash commands from ./commands/ into ~/.claude/commands/
+#   1. Sets TOKE_ROOT to ./toke/ inside this checkout
+#   2. Copies all skills from ./toke/skills/ into ~/.claude/skills/
+#   3. Copies all slash commands from ./toke/commands/ into ~/.claude/commands/
 #   4. Syncs the Brain routing manifest (TOML -> JSON)
 #   5. Runs the full test suite to verify the install
 #   6. Prints the settings.json snippet you need to paste to wire hooks
@@ -40,14 +42,18 @@ for arg in "$@"; do
 done
 
 # ── Pre-flight ─────────────────────────────────────────────────────────────────
-TOKE_ROOT="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+TOKE_ROOT="$REPO_ROOT/toke"
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
 SKILLS_DIR="$CLAUDE_HOME/skills"
 COMMANDS_DIR="$CLAUDE_HOME/commands"
 
-log "Toke installer"
+log "Godspeed / Toke installer"
+log "REPO_ROOT   = $REPO_ROOT"
 log "TOKE_ROOT   = $TOKE_ROOT"
 log "CLAUDE_HOME = $CLAUDE_HOME"
+
+[ -d "$TOKE_ROOT" ] || die "No toke/ subfolder in $REPO_ROOT. Are you running from the godspeed/ repo root?"
 
 command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1 || die "Python 3.10+ is required but not found on PATH"
 PY=$(command -v python3 >/dev/null 2>&1 && echo python3 || echo python)
@@ -158,5 +164,5 @@ Next steps:
 
 5. (Optional) Nightly sleep agents — see README for schtasks / cron setup.
 
-${CYAN}Verify any time with:${RESET}  bash $TOKE_ROOT/install.sh --skip-tests
+${CYAN}Verify any time with:${RESET}  bash $REPO_ROOT/install.sh --skip-tests
 EOF

@@ -1,9 +1,11 @@
-# Toke installer — Windows PowerShell 5.1+ / PowerShell Core 7+
+# Godspeed / Toke installer — Windows PowerShell 5.1+ / PowerShell Core 7+
+#
+# Run from the godspeed\ repo root. The engine lives in .\toke\.
 #
 # What this does:
-#   1. Sets TOKE_ROOT to the absolute path of this checkout
-#   2. Copies all skills from .\skills\ into $HOME\.claude\skills\
-#   3. Copies all slash commands from .\commands\ into $HOME\.claude\commands\
+#   1. Sets TOKE_ROOT to .\toke\ inside this checkout
+#   2. Copies all skills from .\toke\skills\ into $HOME\.claude\skills\
+#   3. Copies all slash commands from .\toke\commands\ into $HOME\.claude\commands\
 #   4. Syncs the Brain routing manifest (TOML -> JSON)
 #   5. Runs the full test suite to verify the install
 #   6. Prints the settings.json snippet you need to paste to wire hooks
@@ -27,12 +29,15 @@ function Warn2 { param([string]$msg) Write-Host "  !!  $msg" -ForegroundColor Ye
 function Die   { param([string]$msg) Write-Host "  XX  $msg" -ForegroundColor Red; exit 1 }
 
 # ── Pre-flight ───────────────────────────────────────────────────────────────
-$TokeRoot    = (Resolve-Path -LiteralPath $PSScriptRoot).Path
+$RepoRoot    = (Resolve-Path -LiteralPath $PSScriptRoot).Path
+$TokeRoot    = Join-Path $RepoRoot "toke"
 $ClaudeHome  = if ($env:CLAUDE_HOME) { $env:CLAUDE_HOME } else { Join-Path $HOME ".claude" }
 $SkillsDir   = Join-Path $ClaudeHome "skills"
 $CommandsDir = Join-Path $ClaudeHome "commands"
 
-Log "Toke installer (PowerShell)"
+if (-not (Test-Path $TokeRoot)) { Die "No toke\ subfolder in $RepoRoot. Run from the godspeed\ repo root." }
+
+Log "Godspeed / Toke installer (PowerShell)"
 Log "TOKE_ROOT   = $TokeRoot"
 Log "CLAUDE_HOME = $ClaudeHome"
 
