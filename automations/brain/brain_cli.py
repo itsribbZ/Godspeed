@@ -556,7 +556,7 @@ def cmd_hook(args: list[str]) -> int:
         "verify": "verify", "/verify": "verify",
         "sitrep": "sitrep", "/sitrep": "sitrep",
         "close-session": "close-session", "/close-session": "close-session",
-        "toke init": "toke-init", "sworder init": "sworder-init",
+        "toke init": "toke-init",
         "brain scan": "brain", "brain audit": "brain", "brain history": "brain",
     }
     inferred_skill: str | None = None
