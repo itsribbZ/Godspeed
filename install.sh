@@ -143,7 +143,8 @@ Next steps:
      {
        "hooks": {
          "UserPromptSubmit": [
-           { "command": "\$TOKE_ROOT/hooks/brain_advisor.sh" }
+           { "command": "\$TOKE_ROOT/hooks/brain_advisor.sh" },
+           { "command": "python \$TOKE_ROOT/hooks/godspeed_fuzzy_trigger.py" }
          ],
          "PostToolUse": [
            { "command": "\$TOKE_ROOT/hooks/brain_tools_hook.sh" }

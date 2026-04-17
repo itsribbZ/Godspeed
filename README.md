@@ -2,6 +2,9 @@
 
 **A Claude Code workflow trigger backed by Toke — a routing classifier and multi-agent orchestration engine.**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-8b5cf6.svg)](https://docs.claude.com/en/docs/claude-code)
+
 Type `godspeed` in a Claude Code session, the Toke engine activates for the rest of the turn: each prompt is scored on complexity (S0–S5), routed to the cheapest model that will handle it well, and — for complex tasks — decomposed into parallel Sonnet workers whose synthesis is critic-gated before it lands in a self-improving memory.
 
 Zero fork of Claude Code. Everything wires in through the hook API.
@@ -21,7 +24,9 @@ Reproduce the benchmark locally: `python toke/automations/brain/eval/brain_vs_ba
 
 ---
 
-## Install (one command)
+## Install
+
+Three commands. ~2 minutes.
 
 ```bash
 git clone https://github.com/<your-username>/godspeed
@@ -35,20 +40,70 @@ bash install.sh
 ```
 
 The installer:
-1. Copies Toke's 16 skills + 2 slash commands into `~/.claude/`
+1. Copies 16 skills + 2 slash commands into `~/.claude/`
 2. Syncs the routing manifest (TOML → JSON)
 3. Runs the 65-test verification suite
 4. Prints the `settings.json` hook block you need to paste
 
-After install, set `TOKE_ROOT` in your shell profile (the installer prints the correct value), add the hook block to `~/.claude/settings.json`, and start a new Claude Code session. Try:
+---
+
+## Quick start
+
+Four steps from fresh install to running Godspeed on a prompt.
+
+### 1. Wire up the hooks (one-time)
+
+After install, do three things, in this order:
+
+1. **Paste** the hook block the installer printed into `~/.claude/settings.json` (under the `hooks` key — merge with any existing hooks, don't replace).
+2. **Export** `TOKE_ROOT` in your shell profile. The installer prints the exact path — add it to `~/.bashrc`, `~/.zshrc`, or your PowerShell profile:
+   ```bash
+   export TOKE_ROOT="$HOME/godspeed/toke"
+   ```
+3. **Restart** Claude Code. This reloads the hooks and picks up the new env var.
+
+**Verify the install is live:**
 
 ```
 /brain-score "refactor my distributed cache across 4 files"
-# → Tier: S4 | Model: opus | Effort: high
-
-godspeed
-# → activates the full Toke pipeline for this turn
+→ Tier: S4 | Model: opus | Effort: high
 ```
+
+If you see a tier classification, Godspeed is wired in correctly.
+
+### 2. Run Godspeed on a prompt
+
+Prepend `godspeed` to any prompt you want the full pipeline to handle:
+
+```
+godspeed fix the T-pose in my AnimBP and add a slide ability
+```
+
+What happens automatically, in order:
+
+| Step | What runs | Why |
+|------|-----------|-----|
+| 1 | **Tick + self-audit** (every 33rd run) | Catches routing drift before it compounds |
+| 2 | **Brain scores** the prompt (~5 ms, keyword + regex) | Classifies complexity on the S0–S5 scale |
+| 3 | **Router picks** the cheapest model that will handle it | S0–S2 → Haiku or local Qwen · S3 → Sonnet · S4–S5 → Opus |
+| 4 | **For S3+:** Zeus decomposes into parallel Sonnet workers | ~10× cheaper than monolithic Opus, quality parity (Anthropic MARS pattern) |
+| 5 | **Oracle critiques** the synthesis against a 10-point AAA rubric | Quality gate: PASS / SOFT_FAIL / HARD_FAIL |
+| 6 | **Mnemos stores** the PASSing answer with vector embeddings | Next similar prompt retrieves in milliseconds |
+| 7 | **Reconcile** — verify every triaged item was done, blocked, or deferred | Zero missed tasks |
+
+### 3. Close the session
+
+Type `close session` when your work is done. Decisions, learnings, and memory writes are persisted to `~/.claude/projects/<project>/memory/`. Next session's `init` picks up exactly where this one left off.
+
+### 4. Useful commands
+
+| Command | What it does |
+|---------|-------------|
+| `godspeed <prompt>` | Activate the full pipeline for the prompt |
+| `godspeed info` | Render the pipeline diagram — read-only, no execution |
+| `/brain-score "prompt"` | Classify complexity without running anything |
+| `init` | Load session context (auto-detects the project from CWD) |
+| `close session` | Persist memory, write learnings, summarize |
 
 ---
 
