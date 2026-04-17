@@ -38,7 +38,7 @@ Scan the conversation for:
 1. **Work Completed** — features built, bugs fixed, code written, files created/modified
 2. **Decisions Made** — design choices, architecture decisions, approach changes
 3. **Bugs Found/Fixed** — new bugs discovered, existing bugs resolved
-4. **Research Done** — professor/profTeam/blueprint outputs, findings
+4. **Research Done** — outputs from any research / analysis skill used this session
 5. **Tools Created/Updated** — new scripts, skill improvements, workflow changes
 6. **Unfinished Work** — started but not completed, mid-progress state
 7. **Next Steps** — planned next actions, logical continuations
@@ -130,49 +130,22 @@ Check if the session produced insights that change how we work long-term (not ta
 
 ### 4c. Skill Learnings — IF skills were invoked AND new insights gained
 
-#### Structured Format (v2.0 — per shared protocols §9)
+If a durable pattern, failure mode, or calibration update was learned that future invocations of the same skill should know about, append a short structured entry to that skill's `_learnings.md`:
 
-Append to each invoked skill's `_learnings.md` using the structured format:
 ```markdown
 ### [ENTRY_TYPE]: [Topic] — [YYYY-MM-DD]
-<!-- meta: { "run_id": "[skill]_[topic]_[date]", "domain": "[domain]", "confidence": "[HIGH/MEDIUM/LOW]", "confirmed_count": 1, "roi_score": [1-5], "staleness_check": "[YYYY-MM-DD]" } -->
 
-**Finding**: [One-sentence summary]
-**Evidence**: [What proved it]
+**Finding**: [One-sentence summary of the learning]
+**Evidence**: [What proved it — run data, source, or empirical observation]
 **Applies to**: [skill1, skill2, ALL]
-**Action**: [What to DO differently]
+**Action**: [What to DO differently next time]
 ```
 
-Only write if something genuinely new was learned. Don't force entries for every session.
+Entry types: `Score`, `Anti-Pattern`, `Recovery`, `Query ROI`, `Run`. Only write if something genuinely new was learned — don't force entries for every session.
 
-#### Cross-Skill Auto-Promotion (v2.0 — per shared protocols §10)
+**Cross-skill pattern**: if the same learning could apply to multiple skills (e.g. a cache-discipline rule useful beyond one skill), mention it explicitly in the `Applies to` field. Follow-up consolidation into a shared file is optional — don't build that infrastructure unless you find yourself duplicating the same learning across 3+ skill-local files.
 
-After writing skill-local learnings:
-1. **Scan `_shared_learnings.md`** for similar findings
-2. **If match found**: Increment `confirmed_count` on the shared entry
-3. **If cross-applicable** (applies_to is not just one skill): Check if the same pattern exists in another skill's `_learnings.md`
-   - If found in 2+ skill-local learnings → **auto-promote to shared** with next SL-ID
-   - grep max existing SL-ID first (per SL-043): `grep -oE 'SL-[0-9]+' ~/.claude/shared/_shared_learnings.md | sed 's/SL-//' | sort -n | tail -1`
-4. **Report**: "Cross-skill promotion: [finding] → SL-[NNN]" or "No cross-skill learnings this session"
-
-#### Checkpoint Verification (v2.1 — 2026-04-10 audit expansion)
-
-For each of these skills invoked during the session, verify the `_learnings.md` pipeline fired:
-
-**Holy Tools** (original v2.0 coverage):
-- devTeam, profTeam, holy-trinity, godspeed
-
-**Previously-broken-pipeline skills** (added 2026-04-10 per toolset audit — shell-append Phase 0 fix must be verified every session until confirmed stable):
-- blueprint, bionics, marketbot, brain, debug, cycle
-
-**Protocol**:
-1. **Check each invoked skill's `_learnings.md`** — did a session marker AND incremental checkpoints get written during the session?
-2. **If YES + marker present**: shell-append fired correctly. Consolidate marker into a clean run entry.
-3. **If marker present but no further checkpoints**: Phase 0 fired but mid-execution writes didn't. Flag: "⚠ Partial checkpoint: marker present but phase checkpoints missing for [skill]."
-4. **If NO marker at all**: The Phase 0 shell-append protocol didn't fire. This is a v4.1 regression — the fix from 2026-04-10 broke. Write a manual recovery entry and flag: "🚨 SHELL-APPEND REGRESSION: [skill] Phase 0 did not write session marker. Root cause investigation needed."
-5. This verification catches silent pipeline failures that SL-044 identified AND confirms the SL-062 shell-append fix is still holding.
-
-**Expanded baseline**: any invoked skill with <5 total learning entries after 10+ known invocations is flagged as "PIPELINE LOW — may need v4.1 upgrade."
+**Pipeline health spot-check (optional)**: for any skill invoked more than ~10 times, `grep -c '^###' ~/.claude/skills/<skill>/_learnings.md`. An active skill with fewer than 5 entries total is probably skipping its learning-write step — flag it for investigation rather than silently accepting the gap.
 
 ### 4d. Toke Systems Snapshot — IF Brain or Homer were active this session
 
@@ -224,18 +197,14 @@ SAVED TO MEMORY:
   - [files created/updated]
 
 SKILL LEARNINGS:
-  - [skills with new entries / checkpoint verification results]
-  - Cross-skill promotions: [SL-NNN list or none]
+  - [skills that got a new _learnings.md entry this session, or "none"]
 
 BIBLE: [Updated / No changes needed / Updates flagged]
 
 TOKE SYSTEMS: [if active]
   Brain: [N] decisions, [N] tool calls, tick [N]
   Homer: [status summary or "not invoked"]
-
-ECOSYSTEM HEALTH:
-  Pipeline: devTeam=[N] profTeam=[N] trinity=[N] godspeed=[N]
-  Checkpoint verification: [all fired / ⚠ manual recovery for: list]
+  Mnemos: [recall rows, or "not touched"]
 
 NEXT SESSION:
   - [priority-ordered list]
@@ -278,6 +247,11 @@ After all writes, verify:
 | Git snapshot in status | Recent work areas |
 | session_log.json (if applicable) | Session history and continuity |
 
-## Protocols
+## Rules (brief)
 
-Follow `~/.claude/shared/_shared_protocols.md` for: post-invocation learning (§4), incremental checkpoints (§5), session safety (§6), learning pipeline health (§7), structured learning format (§9), cross-skill auto-promotion (§10), staleness detection (§11).
+- **Never overwrite previous sessions** in `project_status.md` — append only.
+- **Never save ephemeral info** — no debug logs, no temp state, no code that's already in the repo.
+- **DO save context that would be lost** — decisions, reasoning, mid-progress state, user preferences.
+- **Convert relative dates to absolute** — "tomorrow" → specific date.
+- **Keep entries concise** — summaries over transcripts.
+- **Deduplicate** — check existing memories before creating new ones.
