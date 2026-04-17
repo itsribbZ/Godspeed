@@ -1,92 +1,28 @@
 # Toke
 
-> **A routing classifier + multi-agent orchestrator for Claude Code.** Picks Haiku/Sonnet/Opus per prompt. Saves 4-8% of Claude Code spend without quality loss. Beats naive baselines by 31-52 percentage points on accuracy.
+**A routing classifier and multi-agent orchestrator for Claude Code.** Sits between your prompts and Anthropic's API. Scores each prompt on a 6-tier complexity scale (S0–S5), routes it to the right model (Haiku / Sonnet / Opus), and decomposes complex tasks into parallel Sonnet workers with critic-gated memory writes. Fully local; the only external call is to the Anthropic API.
 
 ---
 
-## What Toke does
+## Benchmark
 
-Toke sits between your prompts and Anthropic's API. For every prompt:
+200-prompt held-out evaluation. Reproduce with `python automations/brain/eval/brain_vs_baselines.py --json out.json`.
 
-1. **Brain** classifies task complexity (S0-S5) via manifest-driven signals + guardrails
-2. **Homer** (optional) decomposes complex tasks into parallel Sonnet workers with Oracle-gated memory writes
-3. **Hooks** wire both into Claude Code's UserPromptSubmit / PostToolUse / SessionEnd events
-4. **Sleep agents** (nightly) tune weights, distill learnings, audit theater — no manual maintenance
+| Classifier | Exact | Weighted | Wrong |
+|---|---:|---:|---:|
+| **Toke v2.6.3** | **69.0%** | **0.843** | **1** |
+| Majority-class baseline (always S3) | 37.5% | 0.603 | 34 |
+| Keyword-only | 28.5% | 0.490 | 61 |
+| Length-only | 25.0% | 0.532 | 37 |
+| Random (seed=42) | 17.0% | 0.320 | 106 |
 
-Everything runs locally. No external API beyond Anthropic's. Stdlib-only for Brain; SQLite for Homer; Node.js for the fast-path hook (~90ms warm).
+Toke beats the best naive baseline by **+31.5 percentage points** on exact match. One misclassification in 200; 199/200 are either exact or one tier off (same model in most cases).
 
----
-
-## Measured results
-
-200-prompt held-out benchmark (2026-04-17). See [brain_vs_baselines_2026-04-17.json](automations/brain/eval/brain_vs_baselines_2026-04-17.json).
-
-```
-Classifier                        Exact   Weighted   Wrong
-─────────────────────────────────────────────────────────
-Brain (v2.6.3)                   69.0%     0.843       1
-Majority-class (always S3)       37.5%     0.603      34
-Keyword-only                     28.5%     0.490      61
-Length-only                      25.0%     0.532      37
-Random (seed=42)                 17.0%     0.320     106
-```
-
-Brain beats the best naive baseline by **31.5 pp exact match**. One wrong classification in 200. 199/200 are either exact or adjacent (one tier off, same model in most cases).
-
-**Monthly cost impact** (measured on ~$15K Opus spend): Zone-2 subagent routing alone saves ~$750/mo. Auto-Zeus orchestration on S3+ tasks projects to $600-1,200/mo additional savings at quality parity (MARS pattern).
-
----
-
-## Architecture
-
-```
-                Claude Code prompt
-                       │
-          UserPromptSubmit hook (~90ms warm)
-                       │
-                  Brain classify
-         ┌─────────────┼─────────────┐
-         ▼             ▼             ▼
-     S0-S2         S3 routed       S4-S5
-     (Haiku)       to Zeus         (Opus)
-                       │
-                       ▼
-              Zeus decompose
-                       │
-         ┌─────────────┼─────────────┐
-         ▼             ▼             ▼
-     Calliope       Clio          Urania      (parallel Sonnet muses)
-     (research)   (code arch)  (measurement)
-                       │
-                       ▼
-              Oracle scores synthesis
-             (sacred rules + rubric + theater)
-                       │
-           ┌───────────┴───────────┐
-           ▼                       ▼
-       PASS / SOFT_FAIL        HARD_FAIL
-           │                       │
-           ▼                       ▼
-     Mnemos writes          Block write,
-     (3-tier memory)        return verdict
-           │
-           ▼
-     VAULT v2 SQLite
-     (WAL, retry/backoff, replay)
-```
+**Cost impact, measured on ~$15K/month Opus spend:** subagent routing alone saves ~$750/month. Auto-orchestration on S3+ tasks projects an additional $600–1,200/month at quality parity (per Anthropic's multi-agent research eval — see references).
 
 ---
 
 ## Install
-
-### Requirements
-- Python 3.10+ (stdlib only for Brain; `sentence-transformers` optional for Mnemos vector search)
-- Node.js 18+ (for the fast-path hook)
-- Claude Code CLI (the hooks wire into it)
-
-### One-command install (recommended)
-
-Clone the repo, then run the installer for your platform. It copies all 16 skills + 2 slash commands into `~/.claude/`, syncs the Brain manifest, and runs the 65-test verification.
 
 ```bash
 git clone https://github.com/<your-username>/toke
@@ -99,135 +35,112 @@ bash install.sh
 .\install.ps1
 ```
 
-The installer will NOT overwrite existing skills by default. Pass `--force` (bash) or `-Force` (PowerShell) to replace them (old versions are backed up to `.bak.<timestamp>` directories).
+The installer copies 16 skills and 2 slash commands into `~/.claude/`, syncs the routing manifest (TOML → JSON), and runs the full 68-test verification. Existing skills with the same name are preserved unless `--force` (bash) / `-Force` (PowerShell) is passed — in which case old versions are backed up to `.bak.<timestamp>`.
 
-### What gets installed
+After install:
 
-```
-~/.claude/skills/
-├── godspeed/      ← max-execution mode (activates on "godspeed")
-├── brain/         ← S0-S5 classifier workbench
-├── zeus/          ← orchestrator (auto-dispatched on S3+ via godspeed Phase 0.5)
-├── calliope/      ← research muse
-├── clio/          ← code-archaeology muse
-├── urania/        ← measurement muse
-├── sybil/         ← advisor escalation (advisor_20260301)
-├── mnemos/        ← 3-tier memory with hybrid semantic+FTS5 search
-├── oracle/        ← synthesis critic (Sacred Rules + theater detection)
-├── aurora/        ← nightly routing-weight tuner
-├── hesper/        ← nightly learning distiller
-├── nyx/           ← nightly theater auditor
-├── toke-init/     ← session pre-flight
-├── close-session/ ← session closure + memory persistence
-├── verify/        ← build/test health check (auto-detects project type)
-└── sitrep/        ← cross-project status aggregator
+1. Add the hook block the installer prints to `~/.claude/settings.json`.
+2. Set `TOKE_ROOT` in your shell profile.
+3. Start a new Claude Code session and try `/brain-score "refactor my distributed cache across 4 files"` — expect `S4 / opus / high`.
 
-~/.claude/commands/
-├── toke.md        ← /toke — one-screen workbench
-└── brain-score.md ← /brain-score — classify any prompt
-```
+### Requirements
 
-### Wire hooks into Claude Code
-
-After the install script finishes, add this block to `~/.claude/settings.json` (the installer prints it at the end of its run):
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      { "command": "$TOKE_ROOT/hooks/brain_advisor.sh" }
-    ],
-    "PostToolUse": [
-      { "command": "$TOKE_ROOT/hooks/brain_tools_hook.sh" }
-    ],
-    "SessionEnd": [
-      { "command": "$TOKE_ROOT/hooks/session_cost_report.sh" }
-    ]
-  }
-}
-```
-
-Also persist `TOKE_ROOT` in your shell profile so the hooks can find the install location:
-
-```bash
-# bash / zsh
-export TOKE_ROOT="$(pwd)"
-# PowerShell (run once)
-[Environment]::SetEnvironmentVariable('TOKE_ROOT', (Get-Location).Path, 'User')
-```
-
-### First test (prove it works)
-
-Start a new Claude Code session and try:
-
-```
-/brain-score refactor my distributed cache across 4 files
-```
-
-Expected output: `Tier: S4 | Model: opus | Effort: high`.
-
-Then type `godspeed` and ask for any multi-step task. Phase -1 tick will fire, Phase 0.5 will classify the prompt, and if the task scores S3+ Zeus will auto-dispatch with parallel MUSES + Oracle-gated Mnemos write.
-
-### Optional: nightly sleep agents
-
-Aurora (weight tuner), Hesper (learning distiller), Nyx (theater auditor) can run nightly via Windows Task Scheduler:
-
-```bash
-schtasks //create //tn "Toke_Homer_Sleep_Nightly" //tr "$TOKE_ROOT/automations/homer/sleep/run_sleep_nightly.bat" //sc DAILY //st 04:00 //f
-```
-
-Or on macOS/Linux, add a cron entry:
-
-```cron
-0 4 * * * $TOKE_ROOT/automations/homer/sleep/run_sleep_nightly.sh
-```
+- Python 3.10+ (stdlib only for the core classifier)
+- Node.js 18+ (fast-path hook, warm latency ~90 ms)
+- Claude Code CLI (the hooks wire into its lifecycle events)
+- Optional: `sentence-transformers` for semantic memory search, Ollama for local-LLM fallback
 
 ---
 
-## Project layout
+## How it works
 
 ```
-toke/
-├── README.md                  # this file
-├── install.sh                 # bash installer (macOS / Linux / Git Bash)
-├── install.ps1                # PowerShell installer (Windows)
-├── .env.example               # env var template
-├── CLAUDE.md                  # project context for AI collaborators
-├── PROJECT_BRIEF.md           # 8-stage pipeline analysis
-├── skills/                    # 16 Claude Code skills (installer copies to ~/.claude/skills/)
-├── commands/                  # 2 slash commands (installer copies to ~/.claude/commands/)
-├── pipeline/                  # measured Claude Code internals (stages 0-7)
-├── tokens/                    # 12 measurement tools + reports
-├── research/                  # Brain / routing literature review
-├── automations/
-│   ├── brain/                 # S0-S5 classifier (manifest-driven)
-│   ├── gepa/                  # evolutionary weight tuner
-│   ├── homer/                 # multi-agent pantheon (zeus + zeus_cli, muses, oracle, mnemos, vault, sleep)
-│   ├── local/                 # Qwen 2.5 14B via Ollama fallback
-│   ├── governance/            # audit_protocol.py + threat model
-│   └── portability/           # migration guide
-└── hooks/                     # UserPromptSubmit / PostToolUse / SessionEnd
+Claude Code prompt
+    │
+    ▼
+UserPromptSubmit hook  ────►  Classifier (stdlib, manifest-driven)
+                                 │
+                  ┌──────────────┼──────────────┐
+                  ▼              ▼              ▼
+               S0 – S2        S3 routed      S4 – S5
+              (Haiku)      to orchestrator   (Opus)
+                                 │
+                                 ▼
+                          Decompose plan
+                                 │
+                   ┌─────────────┼─────────────┐
+                   ▼             ▼             ▼
+                Research   Code-archaeology  Measurement
+                  muse         muse            muse         (parallel Sonnet)
+                   └─────────────┼─────────────┘
+                                 ▼
+                         Synthesis + citation check
+                                 │
+                                 ▼
+                         Critic evaluates synthesis
+                          (rules + rubric + theater
+                           detection)
+                                 │
+                   ┌─────────────┴─────────────┐
+                   ▼                           ▼
+           PASS / SOFT_FAIL               HARD_FAIL
+                   │                           │
+                   ▼                           ▼
+          Write to memory store         Block write,
+          (SQLite FTS5 + vectors)       return verdict
+                   │                    with rule failures
+                   ▼
+            WAL checkpoint
 ```
+
+Every classification lands in `~/.claude/telemetry/brain/decisions.jsonl` for cost analysis and drift monitoring.
 
 ---
 
-## Usage
+## Stack
 
-### Classify a prompt (Brain)
+| Layer | Technology |
+|---|---|
+| Classifier | Python standard library, zero external dependencies |
+| Fast-path hook | Node.js 18+ (warm ≈ 90 ms, cold ≈ 160 ms) |
+| Memory store | SQLite with FTS5 + optional `sentence-transformers` vector embeddings (`all-MiniLM-L6-v2`, 384-d, local) |
+| Orchestrator | Python standard library + Claude Code `Agent` tool (Sonnet via `CLAUDE_CODE_SUBAGENT_MODEL` env var) |
+| Checkpoint store | SQLite with WAL + retry/backoff |
+| Optional local LLM | Ollama + Qwen 2.5 14B (S0–S2 fallback, no API cost) |
+| Optional evolution | GEPA-style evolutionary weight tuner for manifest refinement |
+
+---
+
+## Design decisions
+
+1. **Manifest-driven classifier, not learned.** Tier boundaries, signal weights, and guardrails live in a TOML manifest. Every routing decision is auditable in plain text. No opaque model weights to explain to stakeholders.
+2. **Fail-open everywhere.** If the classifier crashes, default to Opus. If a hook errors, exit 0 silently. No component of Toke can block a Claude turn.
+3. **The critic gates memory writes in code.** A `HARD_FAIL` verdict blocks the memory write inside the Python pipeline function — not by documentation convention. The sacred ordering is enforced by structure.
+4. **Sleep-time agents propose, humans decide.** The nightly weight-tuner and theater-auditor never auto-apply changes. Every suggested change is a proposal awaiting explicit approval.
+5. **Standard library first.** The core is stdlib only. Optional dependencies are truly optional and fall back gracefully when missing.
+6. **Receipts mandatory.** Every accuracy claim in this README is backed by a JSON artifact and a reproducible runner. No benchmark numbers without a way to regenerate them.
+7. **Progressive disclosure on memory reads.** Memory search returns snippet-level summaries first; full content is fetched on demand. Measured ~7–10× token reduction on repeated-recall workloads.
+8. **Oracle-gated atomic writes.** Memory writes for orchestrator synthesis output run through a single CLI command that collapses "evaluate synthesis" and "write to memory" into one atomic operation, eliminating the fragile pattern of running them as separate steps.
+
+---
+
+## Usage examples
+
+### Classify a prompt
 
 ```bash
 python automations/brain/brain_cli.py score "design a distributed caching layer"
-# → Tier: S4 | Model: opus | Effort: high | Score: 0.400 | Reason: complex_design_floor + system_scope_floor
+# Tier: S4 | Model: opus | Effort: high | Score: 0.400
 ```
 
-### Cost scan (30-day window)
+### Cost analysis against a 30-day window
 
 ```bash
 python automations/brain/brain_cli.py scan
-# → Total spend: $15,644 | Savings projection: $753 achievable (Zone 2 subagents)
+# Total spend: $15,644 | Subagent-routing savings projection: $753
 ```
 
-### Run the Homer pipeline (Oracle-gated synthesis → Mnemos)
+### Run the orchestrator synthesis → memory pipeline in Python
 
 ```python
 from zeus.zeus_pipeline import gate_and_write
@@ -237,66 +150,111 @@ from mnemos.mnemos import MnemosStore
 result = gate_and_write(
     oracle=Oracle(),
     store=MnemosStore(),
-    synthesis="...your Zeus synthesis text...",
-    topic="my_analysis",
-    citations=["session:my_session_id"],
+    synthesis="...multi-agent synthesis output...",
+    topic="caching_analysis",
+    citations=["session:run_20260417"],
 )
-# result.written=True, verdict="PASS", entry_id="recall_20260417_..."
+# result.written == True, result.verdict == "PASS", result.entry_id == "recall_..."
 ```
 
-### Run sleep agents manually
+### Run the same flow from the CLI (atomic)
+
+```bash
+python automations/homer/zeus/zeus_cli.py gate-write \
+    --topic "caching analysis" \
+    --synthesis-file /tmp/synthesis.md \
+    --citations "session:run_20260417,decisions.jsonl:200"
+```
+
+### Run nightly maintenance agents on demand
 
 ```bash
 python automations/homer/sleep/sleep_cli.py run all
-# Aurora (weight tuner) + Hesper (learning distiller) + Nyx (theater auditor)
-# Reports land in automations/homer/sleep/{aurora,hesper,nyx}/
-```
-
-### Benchmark against baselines
-
-```bash
-python automations/brain/eval/brain_vs_baselines.py --json out.json
+# Weight tuner + learning distiller + theater auditor — reports land in
+# automations/homer/sleep/<agent>/ for review.
 ```
 
 ---
 
-## Key design decisions
+## Project layout
 
-1. **Manifest-driven, not learned.** Brain's tier boundaries, signal weights, and guardrails live in a TOML manifest. Anyone can audit and edit. No opaque model weights to explain.
+```
+toke/
+├── README.md                     this file
+├── install.sh / install.ps1      one-command installer (bash + PowerShell)
+├── .env.example                  env var template
+├── skills/                       16 Claude Code skills (installer copies to ~/.claude/skills/)
+├── commands/                     2 slash commands (installer copies to ~/.claude/commands/)
+├── automations/
+│   ├── brain/                    S0-S5 classifier (manifest-driven)
+│   ├── homer/                    multi-agent orchestrator (internal codename — see Naming)
+│   ├── gepa/                     evolutionary weight tuner
+│   ├── local/                    Ollama fallback
+│   ├── governance/               audit protocol + threat model
+│   └── portability/              migration guide
+├── hooks/                        UserPromptSubmit / PostToolUse / SessionEnd
+├── pipeline/                     measured Claude Code internals (8 stages documented)
+├── tokens/                       token-accounting measurement tools
+└── research/                     literature review feeding the classifier design
+```
 
-2. **Fail-open everywhere.** If Brain crashes, default to S4 (Opus). If hooks error, exit 0 silently. No hook can block a Claude turn.
+### Naming convention
 
-3. **Oracle gates Mnemos writes in code.** Sacred-rule HARD_FAIL blocks memory writes. Enforced by `zeus_pipeline.gate_and_write()`, not by convention.
+The multi-agent orchestrator internal codename is **Homer**. Each layer is named after a figure from Greek mythology to serve as a memorable navigation aid — each name reflects the layer's role:
 
-4. **Sleep agents propose, humans decide.** Aurora doesn't auto-apply weight changes. Nyx doesn't auto-delete theatrical SKILL.md sections. Every change is a proposal awaiting greenlight.
+| Codename | Role |
+|---|---|
+| Zeus | Top-level orchestrator (decomposes, dispatches, synthesizes) |
+| Calliope | Research worker (web + synthesis, T1-T3 source citations) |
+| Clio | Code-archaeology worker (file:line mapping of existing codebases) |
+| Urania | Measurement worker (telemetry, benchmarks, receipts) |
+| Sybil | Advisor-escalation wrapper (calls Anthropic's advisor API on hard failures) |
+| Mnemos | Three-tier memory store (context-resident / searchable / cold archive) |
+| Oracle | Synthesis critic (rule checks, rubric scoring, theater detection) |
+| Aurora / Hesper / Nyx | Nightly maintenance agents (weight tuning, learning distillation, theatrical-language auditing) |
 
-5. **Stdlib-first.** Brain + all core Python is stdlib only. Dependency chain is short: Node.js for the fast hook, SQLite for VAULT v2. Optional: `anthropic` for LLM fallback, `dspy-ai` for GEPA.
-
-6. **Receipts mandatory.** Every accuracy claim is backed by `eval/*.json` + reproducible via `brain_vs_baselines.py`. No magic.
+The naming is internal-only. External documentation and function signatures use standard industry terms.
 
 ---
 
 ## Environment variables
 
 | Variable | Default | Purpose |
-|----------|---------|---------|
-| `TOKE_ROOT` | `$HOME/Desktop/T1/Toke` (author's layout) | Install location of the Toke repo |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | `sonnet` | Zone 2 subagent routing (Brain Consultation §2) |
-| `ANTHROPIC_API_KEY` | — | Required for `brain advise` (Sybil L4 advisor escalation) |
-| `OLLAMA_HOST` | `http://127.0.0.1:11434` | Local Qwen fallback at `automations/local/` |
+|---|---|---|
+| `TOKE_ROOT` | cloned repo path | Install location (hooks reference it) |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | `sonnet` | Default model for subagents spawned via the Claude Code Agent tool |
+| `ANTHROPIC_API_KEY` | — | Required for the advisor escalation path |
+| `OLLAMA_HOST` | `http://127.0.0.1:11434` | Local-LLM endpoint for the S0–S2 fallback |
 
 See `.env.example` for a complete template.
 
 ---
 
-## License
+## Testing
 
-MIT (pending — currently a private personal project).
+```bash
+python automations/brain/brain_tests.py            # classifier smoke tests
+python automations/homer/mnemos/test_mnemos.py     # memory store (45/45)
+python automations/homer/homer_integration_test.py # end-to-end integration (20/20)
+```
+
+All three suites pass on a clean install.
 
 ---
 
-## Author
+## References
 
-Ribbz. 21. AI-collaborative systems engineer building solo in Tahoe.
+- Anthropic. "How we built our multi-agent research system." 2025. https://www.anthropic.com/engineering/multi-agent-research-system
+- Packer, C. et al. "MemGPT: Towards LLMs as Operating Systems." arXiv:2310.08560. 2023.
+- Zhou, Y. et al. "EvolveR: Self-Evolving Agents via Reflection." arXiv:2510.16079. 2025.
+- Anthropic Prompt Caching documentation. https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
 
-Built with Claude Code as implementation partner. Architecture + design decisions are mine; implementation is a collaboration. See `CLAUDE.md` for the working protocol.
+---
+
+## License
+
+MIT. See `LICENSE`.
+
+## Contributing
+
+Issues and pull requests welcome. Please run the full test suite (`brain_tests.py`, `test_mnemos.py`, `homer_integration_test.py`) before submitting.
