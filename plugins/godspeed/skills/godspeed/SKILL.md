@@ -171,9 +171,22 @@ For non-Zeus runs: if something durable was learned (a reusable pattern, a new f
 | L5 | `mnemos` | 3-tier memory (Core / Recall / Archival). Citation-enforced writes. Hybrid semantic + FTS5 search. Progressive disclosure. |
 | L7 | `oracle` | Critic. Scores synthesis against Sacred Rules + rubric + theater detection. Gates Mnemos writes. |
 
+Pipeline skills bundled (domain-agnostic methodology):
+- `holy-trinity` — Diagnose → research → implement → verify convergent loop
+- `devTeam` — Code architecture scoring + 7 Laws + regression guard
+- `profTeam` — Multi-agent parallel research with ROI-tracked agent configs
+- `professor` — Single-topic deep research with sourced PDF output
+- `blueprint` — Actionable implementation plan from existing codebase
+- `cycle` — Iterative 3-cycle blueprint refinement
+
 Utility skills bundled:
 - `close-session` — session closure (persists progress)
 - `verify` — build/test verification across Python/Node/C++/etc.
+
+Shared infrastructure (under `${CLAUDE_PLUGIN_ROOT}/shared/`):
+- `_shared_protocols.md` — pre-work loading, source-tier system (T1-T5), parallel exec, post-invocation learning, checkpoints, cache discipline, failure recovery
+- `_shared_learnings.md` — accumulated cross-skill patterns (SL-XXX registry) that skills grep-first for domain wisdom
+- `bifrost_api_contract.md` — themed PDF generation contract (optional — skills that emit PDFs need a library implementing this interface)
 
 ---
 

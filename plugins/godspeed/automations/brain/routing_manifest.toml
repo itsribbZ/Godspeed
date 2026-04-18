@@ -854,6 +854,12 @@ zeus = "S4"
 oracle = "S4"
 mnemos = "S4"
 sybil = "S4"
+"holy-trinity" = "S4"
+devTeam = "S4"
+profTeam = "S4"
+professor = "S4"
+blueprint = "S4"
+cycle = "S4"
 
 # --- Sonnet-safe skills (structured tasks, research muses) ---
 brain = "S2"
