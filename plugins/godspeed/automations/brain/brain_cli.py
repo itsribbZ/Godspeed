@@ -1202,12 +1202,112 @@ def cmd_advisor_status(args: list[str]) -> int:
 # =============================================================================
 
 
+_VERSION_CHECK_REPO = "itsribbZ/godspeed"
+_VERSION_CHECK_URL = f"https://raw.githubusercontent.com/{_VERSION_CHECK_REPO}/master/plugins/godspeed/.claude-plugin/plugin.json"
+_VERSION_CHECK_CACHE_SECONDS = 86400  # 24 hours
+
+
+def _parse_semver(v: str) -> tuple[int, int, int]:
+    """Parse 'v1.2.3' / '1.2.3' / '1.2.3-rc1' into (1, 2, 3). Pre-release suffixes dropped."""
+    v = v.strip().lstrip("vV")
+    parts: list[int] = []
+    for piece in v.split(".")[:3]:
+        token = piece.split("-")[0].split("+")[0]
+        try:
+            parts.append(int(token))
+        except ValueError:
+            parts.append(0)
+    while len(parts) < 3:
+        parts.append(0)
+    return (parts[0], parts[1], parts[2])
+
+
+def _check_plugin_version_banner() -> None:
+    """Compare the installed plugin version to the remote manifest on GitHub.
+
+    Emits a one-time 'new version available' banner when the remote is newer.
+    Cached to CLAUDE_PLUGIN_ROOT/.version_check_cache for 24h so we only hit the
+    network once per day.
+
+    Fails silently on every error path — a broken version check must NEVER
+    block a godspeed invocation.
+    """
+    import os as _os
+    import time as _time
+    import urllib.request as _urlreq
+    import urllib.error as _urlerr
+
+    plugin_root_env = _os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if not plugin_root_env:
+        return  # not running as an installed plugin; skip check
+    plugin_root = Path(plugin_root_env)
+
+    manifest_path = plugin_root / ".claude-plugin" / "plugin.json"
+    if not manifest_path.exists():
+        return
+    try:
+        local_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    local_version = str(local_data.get("version") or "").strip()
+    if not local_version:
+        return
+
+    cache_path = plugin_root / ".version_check_cache"
+    now = _time.time()
+    remote_version: str | None = None
+
+    if cache_path.exists():
+        try:
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+            if now - float(cache.get("checked_at", 0)) < _VERSION_CHECK_CACHE_SECONDS:
+                remote_version = str(cache.get("remote_version") or "") or None
+        except (OSError, json.JSONDecodeError, ValueError, TypeError):
+            pass
+
+    if remote_version is None:
+        try:
+            req = _urlreq.Request(
+                _VERSION_CHECK_URL,
+                headers={"User-Agent": "godspeed-plugin-version-check"},
+            )
+            with _urlreq.urlopen(req, timeout=3) as resp:
+                remote_data = json.loads(resp.read().decode("utf-8"))
+                remote_version = str(remote_data.get("version") or "").strip() or None
+        except (_urlerr.URLError, _urlerr.HTTPError, json.JSONDecodeError,
+                OSError, TimeoutError, UnicodeDecodeError):
+            return
+        if remote_version is None:
+            return
+        try:
+            cache_path.write_text(
+                json.dumps({"checked_at": now, "remote_version": remote_version}),
+                encoding="utf-8",
+            )
+        except OSError:
+            pass
+
+    try:
+        if _parse_semver(remote_version) > _parse_semver(local_version):
+            print(
+                f"[!] NEW GODSPEED VERSION AVAILABLE: v{remote_version} "
+                f"(installed: v{local_version})"
+            )
+            print("    Run: /plugin marketplace update itsribbZ/godspeed")
+            print()
+    except Exception:
+        return
+
+
 def cmd_godspeed_tick(args: list[str]) -> int:
     """brain godspeed-tick [THRESHOLD]
 
     Increment the persistent godspeed invocation counter. Every THRESHOLD
     fires (default 33), auto-run `brain scan` inline for periodic self-audit
     and learning compilation.
+
+    Also performs a cached (24h) check against GitHub for a newer plugin
+    version and emits a one-line banner if outdated.
 
     Counter file: ~/.claude/telemetry/brain/godspeed_count.txt
     Called by godspeed SKILL.md Phase -1 at every invocation.
@@ -1220,6 +1320,8 @@ def cmd_godspeed_tick(args: list[str]) -> int:
         brain godspeed-tick          # defaults to 33
         brain godspeed-tick 50       # custom threshold
     """
+    _check_plugin_version_banner()
+
     threshold = 33
     if args and args[0].isdigit():
         threshold = max(int(args[0]), 1)
