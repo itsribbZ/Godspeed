@@ -64,6 +64,13 @@ Read existing status file first. **Append** new session entry:
 
 ```
 ## Session: [First Task] — [DATE]
+
+**Init→Session Diff** *(skip any layer with zero change — token-economy)*:
+- INIT: signal=[brain-classified init tier, if available]  (Brain log #N)
+- WORK: N files | N bugs resolved | N decisions
+- DELTA: +N new findings | +N items resolved
+- PERSIST: [file paths this close-session writes — content IS the description]
+
 **Completed**:
 - [bullet list of completed work]
 **In-Progress**:
@@ -73,6 +80,13 @@ Read existing status file first. **Append** new session entry:
 **Next Session**:
 - [priority-ordered next steps]
 ```
+
+**Init→Session Diff data sources**:
+- INIT line: parse last init's Brain telemetry entry — `tail` the last `signal=*-init` row from `~/.claude/telemetry/brain/decisions.jsonl`. If Brain never logged an init this session → omit the INIT line.
+- WORK line: count files modified/created + decisions captured + items resolved this session (all available from the scrollback — do not re-read source files).
+- DELTA line: compare session-start state to current state; count net new findings and resolutions.
+- PERSIST line: list the file paths this close-session call is writing, comma-separated, ≤80 chars.
+- **Token cap**: the whole Diff block ≤80 tokens. If any layer has zero delta, omit that line entirely — don't pad.
 
 **NEVER overwrite previous sessions.** Append only.
 
@@ -143,9 +157,42 @@ If a durable pattern, failure mode, or calibration update was learned that futur
 
 Entry types: `Score`, `Anti-Pattern`, `Recovery`, `Query ROI`, `Run`. Only write if something genuinely new was learned — don't force entries for every session.
 
-**Cross-skill pattern**: if the same learning could apply to multiple skills (e.g. a cache-discipline rule useful beyond one skill), mention it explicitly in the `Applies to` field. Follow-up consolidation into a shared file is optional — don't build that infrastructure unless you find yourself duplicating the same learning across 3+ skill-local files.
+#### Cross-skill auto-promotion
 
-**Pipeline health spot-check (optional)**: for any skill invoked more than ~10 times, `grep -c '^###' ~/.claude/skills/<skill>/_learnings.md`. An active skill with fewer than 5 entries total is probably skipping its learning-write step — flag it for investigation rather than silently accepting the gap.
+When the same learning lands in 2+ skill-local files, promote it to `${CLAUDE_PLUGIN_ROOT}/shared/_shared_learnings.md` as an SL-entry so future sessions grep-first off the shared file instead of re-learning in each skill.
+
+1. Grep the max existing SL-ID (so the new one doesn't collide):
+   ```bash
+   grep -oE 'SL-[0-9]+' ${CLAUDE_PLUGIN_ROOT}/shared/_shared_learnings.md | sed 's/SL-//' | sort -n | tail -1
+   ```
+2. Confirm the finding appears in ≥2 skill-local `_learnings.md` files under `${CLAUDE_PLUGIN_ROOT}/skills/*/_learnings.md`. One-skill findings stay local.
+3. Append a new `### [SL-NNN] Title` entry to `_shared_learnings.md` with `Applies to: ALL` (or the specific skill list). Use the next ID after the max from step 1.
+4. Report in the Phase 5 summary: `Cross-skill promotion: [finding] → SL-[NNN]` (or `none`).
+
+Skip auto-promotion if you're unsure the learning generalizes — a false-positive in shared is worse than a duplicated skill-local entry.
+
+#### Checkpoint verification (catches silent pipeline failures)
+
+For every skill invoked during the session, confirm its `_learnings.md` actually got a session marker AND phase checkpoints. A skill that ran but wrote nothing is a regression (learning pipeline silently broke).
+
+```bash
+# Watched list defaults: skills that use Phase 0 shell-append in this release
+WATCHED="devTeam profTeam holy-trinity godspeed blueprint brain cycle"
+TODAY=$(date +%Y-%m-%d)
+for skill in $WATCHED; do
+  lf="${CLAUDE_PLUGIN_ROOT}/skills/$skill/_learnings.md"
+  [ -f "$lf" ] || continue
+  if grep -q "$TODAY" "$lf"; then
+    printf '  %-14s ✓ marker written\n' "$skill"
+  else
+    printf '  %-14s ⚠ no session marker — learning pipeline may have silently failed\n' "$skill"
+  fi
+done
+```
+
+Extend `WATCHED` as you add skills that do compound learning. Skills that don't write per-session learnings (pure lookups, utilities) can stay off the list.
+
+If a skill shows `⚠`: note it in the Phase 5 summary under `SKILL LEARNINGS`, and either write a manual recovery entry or flag for the next session to investigate why Phase 0 didn't fire.
 
 ### 4d. Toke Systems Snapshot — IF Brain or Homer were active this session
 
@@ -198,6 +245,8 @@ SAVED TO MEMORY:
 
 SKILL LEARNINGS:
   - [skills that got a new _learnings.md entry this session, or "none"]
+  - Cross-skill promotions: [SL-NNN list, or "none"]
+  - Checkpoint verification: [all fired / ⚠ manual recovery for: list]
 
 PROJECT DOCS: [Updated / No changes needed / Updates flagged]
 
