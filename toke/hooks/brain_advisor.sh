@@ -13,8 +13,8 @@
 
 set +e
 
-# Portability (2026-04-17): TOKE_ROOT env override; fallback to the user's layout.
-TOKE_ROOT="${TOKE_ROOT:-$HOME/Desktop/T1/Toke}"
+# Portability: prefer TOKE_ROOT env, then CLAUDE_PLUGIN_ROOT (when installed as plugin), then $HOME/.toke.
+TOKE_ROOT="${TOKE_ROOT:-${CLAUDE_PLUGIN_ROOT:-$HOME/.toke}}"
 HOOK_JS="$TOKE_ROOT/hooks/brain_hook_fast.js"
 BRAIN_CLI="$TOKE_ROOT/automations/brain/brain_cli.py"
 STDIN_DATA=$(cat)

@@ -152,8 +152,10 @@ class SessionRecord:
 # Transcript parsing
 # ---------------------------------------------------------------------------
 def _proj_display_name(dir_name: str) -> str:
-    """Convert a project directory name like C--Users-user-Desktop-T1-Toke to Toke."""
-    return dir_name.replace("C--Users-user-", "").replace("-", "/")[:40]
+    """Convert a Claude Code project directory name into a display-friendly path.
+    Strips the OS + username prefix (cross-platform) and truncates to 40 chars."""
+    import re
+    return re.sub(r"^[A-Z]?-?-?Users-[^-]+-", "", dir_name).replace("-", "/")[:40]
 
 
 def parse_transcript(path: Path, proj_display: str, proj_dir: str, prices: dict[str, Prices]) -> SessionRecord | None:

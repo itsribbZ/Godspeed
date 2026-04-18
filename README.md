@@ -35,7 +35,7 @@ Inside a Claude Code session:
 /plugin install godspeed@itsribbZ-godspeed
 ```
 
-That's it. The plugin ships the full engine — all 16 skills, 2 commands, 5 hooks, and the Python automation stack land in Claude Code's plugin cache and register automatically. No shell profile edits, no manifest pasting, no restart required.
+That's it. The plugin ships the full engine — all 18 skills, 3 commands, 5 hooks, and the Python automation stack land in Claude Code's plugin cache and register automatically. No shell profile edits, no manifest pasting, no restart required.
 
 ### Option B — install.sh (for users who prefer `~/.claude/skills/` install)
 

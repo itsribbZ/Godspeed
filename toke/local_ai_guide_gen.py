@@ -580,7 +580,8 @@ def build():
     pdf.cell(0, 5, "Meta AI, Mistral, DeepSeek, LM Arena, Ollama, arXiv papers", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
     # ── Save ────────────────────────────────────────
-    out = "~/Desktop/Local_AI_Guide_April_2026.pdf"
+    import os
+    out = os.environ.get("LOCAL_AI_GUIDE_OUT", "Local_AI_Guide_April_2026.pdf")
     pdf.output(out)
     print(f"PDF saved: {out}")
     print(f"Pages: {pdf.pages_count}")

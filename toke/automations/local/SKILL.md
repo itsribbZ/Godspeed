@@ -1,6 +1,6 @@
 ---
 name: local
-description: Toke Local LLM workbench — routes brain-classified S0/S1/S2 prompts to a local Ollama model (Qwen 2.5 14B) with softmax-entropy confidence monitoring. Critical Logic Override gate hands work back to Claude only when local confidence drops below threshold AND the user explicitly approves. Toke-native — uses Brain's classifier upstream, writes to its own local_decisions.jsonl downstream. Source: ~/Desktop/T1/Toke/automations/local/
+description: Toke Local LLM workbench — routes brain-classified S0/S1/S2 prompts to a local Ollama model (Qwen 2.5 14B) with softmax-entropy confidence monitoring. Critical Logic Override gate hands work back to Claude only when local confidence drops below threshold AND the user explicitly approves. Toke-native — uses Brain's classifier upstream, writes to its own local_decisions.jsonl downstream. Source: $TOKE_ROOT/automations/local/
 model: sonnet
 effort: medium
 ---
@@ -33,8 +33,8 @@ tier ∈ {S3,S4,S5} ──► Claude (default)        confidence_monitor
 
 ## Canonical paths
 
-- CLI:        `~/Desktop/T1/Toke/automations/local/local_cli.py`
-- Manifest:   `~/Desktop/T1/Toke/automations/local/local_manifest.toml`
+- CLI:        `$TOKE_ROOT/automations/local/local_cli.py`
+- Manifest:   `$TOKE_ROOT/automations/local/local_manifest.toml`
 - Decisions:  `~/.claude/telemetry/local/local_decisions.jsonl`
 
 ## Commands
@@ -43,36 +43,36 @@ tier ∈ {S3,S4,S5} ──► Claude (default)        confidence_monitor
 Run a prompt through the full pipeline: brain classification → local-eligible check → Qwen generation → confidence monitor → optional override.
 
 ```bash
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" query "summarize the routing manifest"
+python "$TOKE_ROOT/automations/local/local_cli.py" query "summarize the routing manifest"
 ```
 
 ### `local ping`
 Health check: is Ollama serving? Is the configured model present?
 
 ```bash
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" ping
+python "$TOKE_ROOT/automations/local/local_cli.py" ping
 ```
 
 ### `local stats [N]`
 Show aggregate stats from the last N decisions: override rate, approval rate, avg confidence, token savings vs all-Claude.
 
 ```bash
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" stats 100
+python "$TOKE_ROOT/automations/local/local_cli.py" stats 100
 ```
 
 ### `local config [key=value]`
 Show or update local_manifest.toml settings. With no args, prints current config.
 
 ```bash
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" config
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" config threshold=0.15
+python "$TOKE_ROOT/automations/local/local_cli.py" config
+python "$TOKE_ROOT/automations/local/local_cli.py" config threshold=0.15
 ```
 
 ### `local test`
 Smoke-test the pipeline with 3 representative prompts (one per S0/S1/S2 tier).
 
 ```bash
-python "~/Desktop/T1/Toke/automations/local/local_cli.py" test
+python "$TOKE_ROOT/automations/local/local_cli.py" test
 ```
 
 ## Hard constraints

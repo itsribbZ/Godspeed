@@ -19,7 +19,7 @@
 # Usage:
 #   bash install.sh           # install + verify + print hook snippet
 #   bash install.sh --force   # overwrite existing skills/commands (backup to .bak first)
-#   bash install.sh --skip-tests  # skip the 65-test verification at the end
+#   bash install.sh --skip-tests  # skip the test suite verification at the end
 
 set -euo pipefail
 

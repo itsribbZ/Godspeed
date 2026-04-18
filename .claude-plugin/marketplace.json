@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "godspeed",
-      "description": "The godspeed methodology as a plugin — Brain severity classifier (S0-S5 routing), Homer multi-agent orchestrator (Zeus + 3 MUSES + Oracle critic + Mnemos memory + Sybil advisor), full research/review pipeline (holy-trinity, devTeam, profTeam, professor, blueprint, cycle), 5 lifecycle hooks, 17 skills, 3 slash commands. Fires on 'godspeed' — scores the prompt, auto-dispatches parallel Sonnet workers for S3+ tasks, critic-gates the synthesis, persists to a vector-embedded memory. Self-contained install. Methodology, not personal config — meant to be forked and extended.",
+      "description": "The godspeed methodology as a plugin — Brain severity classifier (S0-S5 routing), Homer multi-agent orchestrator (Zeus + 3 MUSES + Oracle critic + Mnemos memory + Sybil advisor), full research/review pipeline (holy-trinity, devTeam, profTeam, professor, blueprint, cycle), session loop (init + close-session), 5 lifecycle hooks, 18 skills, 3 slash commands. Fires on 'godspeed' — scores the prompt, auto-dispatches parallel Sonnet workers for S3+ tasks, critic-gates the synthesis, persists to a vector-embedded memory. Self-contained install. Methodology, not personal config — meant to be forked and extended.",
       "source": "./plugins/godspeed",
       "category": "development",
       "homepage": "https://github.com/itsribbZ/godspeed",

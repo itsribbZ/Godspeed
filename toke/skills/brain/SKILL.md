@@ -80,7 +80,7 @@ python3 "$TOKE_ROOT/automations/brain/brain_cli.py" test
 3. **Test**: `brain test` to confirm the classifier is behaving correctly
 4. **Tune**: edit `routing_manifest.toml` directly (weights, thresholds, guardrails, skill tiers) — no code changes needed
 5. **Enable Zone 2**: `brain apply-env`, add to shell rc, restart terminal
-6. **Pin skills**: `brain pin SKILLNAME --write` for each skill the user wants to explicitly route
+6. **Pin skills**: `brain pin SKILLNAME --write` for each skill you want to explicitly route
 7. **Wire hooks** (optional): follow `integration_guide.md` to add `brain_advisor.sh` + `brain_telemetry.sh` to `settings.json`
 8. **Monitor**: run `brain scan` weekly to track actual cost vs projected savings
 

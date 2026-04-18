@@ -42,7 +42,8 @@ def parse_all_sessions(project_filter: str = "", days: int = 0) -> list[dict]:
     for proj in sorted(CLAUDE_PROJECTS.iterdir()):
         if not proj.is_dir():
             continue
-        proj_name = proj.name.replace("C--Users-user-", "").replace("-", "/")[:35]
+        import re
+        proj_name = re.sub(r"^[A-Z]?-?-?Users-[^-]+-", "", proj.name).replace("-", "/")[:35]
         if project_filter and project_filter.lower() not in proj_name.lower():
             continue
         for transcript in proj.glob("*.jsonl"):

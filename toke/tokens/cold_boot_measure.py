@@ -88,7 +88,8 @@ def cmd_catalog() -> int:
             data = get_turn1_data(transcript)
             if data:
                 # Extract project name from dir
-                proj_name = proj_dir.name.replace("C--Users-user-", "").replace("-", "/")[:30]
+                import re
+                proj_name = re.sub(r"^[A-Z]?-?-?Users-[^-]+-", "", proj_dir.name).replace("-", "/")[:30]
                 data["project"] = proj_name
                 entries.append(data)
 

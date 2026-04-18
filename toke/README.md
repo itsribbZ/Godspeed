@@ -35,7 +35,7 @@ bash install.sh
 .\install.ps1
 ```
 
-The installer copies 16 skills and 2 slash commands into `~/.claude/`, syncs the routing manifest (TOML → JSON), and runs the full 68-test verification. Existing skills with the same name are preserved unless `--force` (bash) / `-Force` (PowerShell) is passed — in which case old versions are backed up to `.bak.<timestamp>`.
+The installer copies 16 skills and 2 slash commands into `~/.claude/`, syncs the routing manifest (TOML → JSON), and runs the full test suite. Existing skills with the same name are preserved unless `--force` (bash) / `-Force` (PowerShell) is passed — in which case old versions are backed up to `.bak.<timestamp>`.
 
 After install:
 

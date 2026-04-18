@@ -23,7 +23,7 @@ A laboratory for studying and automating Claude Code itself. The deliverables ar
 
 ## Inherits
 
-All rules and behavioral protocols from `~/CLAUDE.md` (the home CLAUDE.md). Sacred Rules apply. No duplication here.
+All rules and behavioral protocols from your home-level `CLAUDE.md` (if present at `~/.claude/CLAUDE.md` or the repo root). No duplication here — keep project-level overrides minimal and reference-only.
 
 ## Entry Point
 

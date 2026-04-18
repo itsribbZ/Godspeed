@@ -8,9 +8,9 @@ Every Brain component is reversible. Use the step for whatever you need to undo.
 
 ### 1. Restore settings.json from backup
 ```bash
-ls ~/Desktop/T1/Toke/hooks/settings_backup_*.json
+ls $TOKE_ROOT/hooks/settings_backup_*.json
 # Pick the most recent backup
-cp "~/Desktop/T1/Toke/hooks/settings_backup_LATEST.json" ~/.claude/settings.json
+cp "$TOKE_ROOT/hooks/settings_backup_LATEST.json" ~/.claude/settings.json
 ```
 
 ### 2. Remove env exports from shell rc
@@ -43,9 +43,9 @@ rm -rf ~/.claude/telemetry/brain/
 
 ### 6. (Optional) Delete Brain source files
 ```bash
-rm -rf ~/Desktop/T1/Toke/automations/brain/
-rm ~/Desktop/T1/Toke/hooks/brain_advisor.sh
-rm ~/Desktop/T1/Toke/hooks/brain_telemetry.sh
+rm -rf $TOKE_ROOT/automations/brain/
+rm $TOKE_ROOT/hooks/brain_advisor.sh
+rm $TOKE_ROOT/hooks/brain_telemetry.sh
 ```
 
 ---

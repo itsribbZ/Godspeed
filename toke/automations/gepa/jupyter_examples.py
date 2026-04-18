@@ -10,8 +10,8 @@ Prerequisite: pip install gepa (already installed on this machine)
 # ═══════════════════════════════════════════════════════════════
 # CELL 1: Import the bridge
 # ═══════════════════════════════════════════════════════════════
-import sys
-sys.path.insert(0, "~/Desktop/T1/Toke/automations/gepa")
+import os, sys
+sys.path.insert(0, os.path.join(os.environ["TOKE_ROOT"], "automations/gepa"))
 from gepa_bridge import (
     get_manifest_weights,
     get_skill_catalog,

@@ -15,8 +15,8 @@
 
 set +e
 
-# Portability (2026-04-17): TOKE_ROOT env override; fallback to the user's layout.
-TOKE_ROOT="${TOKE_ROOT:-$HOME/Desktop/T1/Toke}"
+# Portability: prefer TOKE_ROOT env, then CLAUDE_PLUGIN_ROOT (when installed as plugin), then $HOME/.toke.
+TOKE_ROOT="${TOKE_ROOT:-${CLAUDE_PLUGIN_ROOT:-$HOME/.toke}}"
 HOMER="$TOKE_ROOT/automations/homer"
 MNEMOS="$HOMER/mnemos/mnemos.py"
 SLEEP_CLI="$HOMER/sleep/sleep_cli.py"

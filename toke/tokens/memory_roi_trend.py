@@ -178,8 +178,8 @@ def scan_project(project_dir: Path) -> list[MemoryFileInfo]:
         return []
 
     project_name = project_dir.name
-    # Simplify project name: remove C--Users-user- prefix
-    short_name = re.sub(r"^C--Users-\w+-", "", project_name)
+    # Simplify project name: strip the OS + username prefix (cross-platform).
+    short_name = re.sub(r"^[A-Z]?-?-?Users-[^-]+-", "", project_name)
     if not short_name:
         short_name = "home"
 
