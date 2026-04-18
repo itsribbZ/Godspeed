@@ -124,15 +124,15 @@ DEFAULT_GOLDEN_SET: list[dict[str, str]] = [
     # S4 — architecture / novel debug
     {"prompt": "design Homer's MUSES parallel dispatch from scratch — how workers share state, handle partial failures, and write back to VAULT atomically without race conditions", "expected": "S4"},
     {"prompt": "refactor severity_classifier to support a hybrid trained-classifier + rule-based fallback with graceful degradation semantics", "expected": "S4"},
-    {"prompt": "my AnimBP is T-posing only when the movement component is replicating — trace the root cause across blueprint, skeletal mesh, and replication graph", "expected": "S4"},
+    {"prompt": "my service is returning stale data only when the cache layer is active — trace the root cause across the request, cache layer, and upstream response path", "expected": "S4"},
     {"prompt": "audit the entire hook pipeline for compaction safety and design a fix that preserves telemetry across /compact without manual intervention", "expected": "S4"},
     {"prompt": "design a tiered memory system implementing Letta's Core/Recall/Archival on top of existing MEMORY.md files without adding a vector database", "expected": "S4"},
     # S5 — massive context / overnight
-    {"prompt": "read the entire Sworder Bible (108k lines), ue-knowledge (46k lines), and GDD — cross-reference every combat rule and build a unified decision table of canon sources with line-number receipts", "expected": "S5"},
+    {"prompt": "read the entire project docs corpus (100K+ lines across multiple canonical sources), cross-reference every business rule, and build a unified decision table with line-number receipts", "expected": "S5"},
     {"prompt": "review every skill in ~/.claude/skills, identify pattern drift against shared protocols, and produce per-skill specific edit proposals with reasoning", "expected": "S5"},
     {"prompt": "overnight: ingest 200 decisions from decisions.jsonl, cluster by failure mode, generate synthetic training data for a DSPy classifier, and compile it into an exportable prompt", "expected": "S5"},
     {"prompt": "full architecture review of Toke — Brain v2.3, Homer L0-L7, VAULT, Sybil, Muses — identify every inconsistency and produce a v3.0 redesign with migration plan", "expected": "S5"},
-    {"prompt": "read every file under Desktop/atelier, generate a feature-parity PR for Ink Finder that reuses Atelier's theme system, marketplace UI, and inbox pattern, with passing tests", "expected": "S5"},
+    {"prompt": "read every file under an existing Next.js app, generate a feature-parity PR for a sibling app that reuses the existing theme system, marketplace UI, and inbox pattern, with passing tests", "expected": "S5"},
 ]
 
 

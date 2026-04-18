@@ -260,7 +260,7 @@ Max 2 SYBIL escalations per Zeus session (hard cost cap, same as godspeed v4.1).
 - **Zeus + Brain** — always. Brain is Phase 0, non-negotiable.
 - **Zeus + Clio** — when an existing codebase needs mapping before work begins, Zeus dispatches Clio first so the plan is grounded in actual files rather than guesses.
 - **Zeus + godspeed** — godspeed can invoke Zeus as a tier-2.5 sub-tool when a task escalates past godspeed's default depth. godspeed does NOT become Zeus; Zeus is a capability godspeed can reach for.
-- **Zeus + bionics / devTeam / profTeam** — these remain top-level tools. Zeus can dispatch them as muse executors when a subtask needs their specific capability.
+- **Zeus + devTeam / profTeam** — these remain top-level tools. Zeus can dispatch them as muse executors when a subtask needs their specific capability.
 
 ## Non-Goals for Zeus P0
 

@@ -59,7 +59,7 @@ Before ANY research, scan the project for existing relevant code and documents:
 1. **Search the Source directory** for classes, headers, and systems related to the topic
 2. **Check Docs/Design Systems/Research/** for existing professor research on the topic
 3. **Check Docs/Main Outline/** for GDD references to the system
-4. **Check project documentation** (`~/Desktop/your project721/Docs/Design Systems/your project721_Complete_Game_Systems_Bible.pdf`) — read the relevant chapter(s) for the system being blueprinted. The project docs is the TECHNICAL IMPLEMENTATION REFERENCE with 13 chapters + appendix covering AI, Networking, UI, Audio, Save/Load, Optimization, Space Travel, Inventory, Quests, World Systems, Common Bugs, Code Fluidity, and LOD.
+4. **Check project documentation** (canonical docs at the project root — e.g. `Docs/` or `/[Project]_Docs.pdf`) — read the relevant chapter(s) for the system being blueprinted. Project docs are typically the TECHNICAL IMPLEMENTATION REFERENCE — treat them as T1 truth.
 5. **Check existing Variant folders** (Variant_Combat, Variant_Platforming, Variant_Vehicular, EXO, etc.)
 6. **Catalog what exists**: class names, line counts, current state (working/broken/stub), key functions
 
@@ -70,7 +70,7 @@ This scan is CRITICAL — the blueprint MUST build on existing systems, never pr
 The project docs is the canonical technical reference. Every blueprint MUST:
 - **Read the relevant project docs** before designing the architecture
 - **Align with project docs patterns** — if project documentation prescribes an approach, the blueprint follows it
-- **Flag project docs updates** — if the blueprint discovers information that should be added to or updates project documentation (new patterns, revised performance targets, additional implementation details), flag it to the user with: `📖 BIBLE UPDATE CANDIDATE: [description]`
+- **Flag project docs updates** — if the blueprint discovers information that should be added to or updates project documentation (new patterns, revised performance targets, additional implementation details), flag it to the user with: `📖 PROJECT DOCS UPDATE CANDIDATE: [description]`
 - **Flag Main Objective updates** — if the blueprint reveals information that refines the Main Objective (new quality benchmarks, revised scope, strategic insights), flag it with: `🎯 MAIN OBJECTIVE UPDATE CANDIDATE: [description]`
 - **Cross-reference project docs sections** using `pdf.ref_text()` in the output PDF
 - **project docs mapping**: Use the Init skill's "Which Document Answers What" table to find the right chapter
@@ -145,8 +145,8 @@ from bifrost_pdf import BifrostPDF, BifrostTheme as T
 pdf = BifrostPDF(
     title="[Topic] Blueprint",
     subtitle="Implementation Blueprint v2.0",
-    output_path=r"~/Desktop\your project721\Docs\Design Systems\Research\Blueprint_[Topic].pdf",
-    footer="SWORDER:721 // Implementation Blueprint // [Topic]"
+    output_path=r"~/Desktop/[Project]/Docs/Research/Blueprint_[Topic].pdf",
+    footer="[Project] // Implementation Blueprint // [Topic]"
 )
 
 # Title page

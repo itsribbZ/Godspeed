@@ -456,35 +456,31 @@ def get_asi_diagnostics(limit: int = 500) -> list[dict[str, Any]]:
 
 
 def get_gskill_config() -> dict[str, Any]:
-    """Return a gskill configuration for your-game-project.
+    """Return a sample gskill configuration template.
 
     This config tells GEPA's gskill pipeline where to find the repo,
     how to generate tasks, and where to output learned skills.
 
-    NOTE: gskill requires GEPA installed + SWE-smith. This config
-    is preparation for when the user is ready to run it.
+    NOTE: gskill requires GEPA installed + SWE-smith. Users should edit
+    this template for their own target repository before running.
     """
     return {
         "repository": {
-            "path": "~/Documents/your-game-project/MyProject",
-            "language": "C++",
-            "framework": "Unreal Engine 5",
-            "build_system": "UnrealBuildTool",
+            "path": "[/path/to/your/project]",
+            "language": "[language]",
+            "framework": "[framework]",
+            "build_system": "[build system]",
         },
         "task_generation": {
             "method": "swe-smith",
             "focus_areas": [
-                "AnimBP / animation blueprint",
-                "GAS (Gameplay Ability System)",
-                "Character movement component",
-                "AI behavior trees / StateTree",
-                "Network replication",
-                "Save/load persistence",
-                "UI / UMG widgets",
+                "[subsystem 1]",
+                "[subsystem 2]",
+                "[subsystem 3]",
             ],
         },
         "skill_output": {
-            "path": str(SKILLS_DIR / "sworder-gskill" / "SKILL.md"),
+            "path": str(SKILLS_DIR / "custom-gskill" / "SKILL.md"),
             "format": "claude_code_skill",
             "frontmatter": {
                 "model": "sonnet",
@@ -497,7 +493,7 @@ def get_gskill_config() -> dict[str, Any]:
             "reflection_model": "claude-sonnet-4-6",
             "proposer_model": "claude-sonnet-4-6",
         },
-        "note": "Config only — requires GEPA + SWE-smith installed to run.",
+        "note": "Template only — fill in repository + focus_areas for your project. Requires GEPA + SWE-smith installed to run.",
     }
 
 
@@ -568,7 +564,7 @@ def print_summary() -> None:
 
     # S4: gskill
     config = get_gskill_config()
-    print(f"S4. gskill config:        ready (your-game-project, {len(config['task_generation']['focus_areas'])} focus areas)")
+    print(f"S4. gskill config:        template ready ({len(config['task_generation']['focus_areas'])} focus-area slots)")
 
     print(f"\nProposal output dir:  {GEPA_OUTPUT_DIR}")
     print(f"Manifest (read-only): {MANIFEST_PATH}")

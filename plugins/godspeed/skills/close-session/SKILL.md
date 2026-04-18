@@ -23,7 +23,7 @@ Init loads context. Close-session saves it. Together: lossless session loop.
    tail -40 ~/.claude/skills/<skill>/_learnings.md        # recent entries only
    ```
    Only Read the full file if a regression is suspected.
-4. **Bible sync** — if a project's bible is >10K tokens, Edit it with targeted file:line anchors. Don't Read the whole file to understand context.
+4. **Project docs sync** — if a project's canonical docs are >10K tokens, Edit them with targeted file:line anchors. Don't Read the whole file to understand context.
 
 Bottom line: **close-session writes summaries, it does NOT re-load session source material.** Everything needed is already in the conversation context.
 
@@ -105,15 +105,15 @@ Add any NEW memory files to the index. One line each, under correct section head
 
 Only run these when the session warrants it. Skip for brief/conversation-only sessions.
 
-### 4a. Bible Sync — IF session changed facts the Bible documents
+### 4a. Project Docs Sync — IF session changed facts the canonical docs describe
 
-Trigger: session modified architecture, systems, counts, performance numbers, known issues, or source structure that the Bible describes.
+Trigger: session modified architecture, systems, counts, performance numbers, known issues, or source structure that the project docs describe.
 
-Projects often maintain a long-form "bible" document (architecture, systems, counts, known issues). If the session changed load-bearing facts that belong in such a doc:
+Projects often maintain canonical long-form docs (architecture, systems, counts, known issues). If the session changed load-bearing facts that belong in such docs:
 
-- **If the bible is a markdown file in the repo** → edit directly. Surgical edits only. Update the `Last Updated` date.
-- **If the bible is a PDF or external doc** → list specific changes under a `BIBLE UPDATES NEEDED` section in the session status entry. The user will apply them externally.
-- **If no bible exists** → skip.
+- **If the docs are markdown files in the repo** → edit directly. Surgical edits only. Update the `Last Updated` date.
+- **If the docs are PDF or external** → list specific changes under a `DOCS UPDATES NEEDED` section in the session status entry. The user will apply them externally.
+- **If no canonical docs exist** → skip.
 
 **Update when:** Factual corrections, new permanent systems, removed systems, updated counts/lists, source structure changes, performance numbers, known issues resolved.
 
@@ -199,7 +199,7 @@ SAVED TO MEMORY:
 SKILL LEARNINGS:
   - [skills that got a new _learnings.md entry this session, or "none"]
 
-BIBLE: [Updated / No changes needed / Updates flagged]
+PROJECT DOCS: [Updated / No changes needed / Updates flagged]
 
 TOKE SYSTEMS: [if active]
   Brain: [N] decisions, [N] tool calls, tick [N]
@@ -236,7 +236,7 @@ After all writes, verify:
 | Close-Session Writes | Init Reads |
 |---------------------|------------|
 | project_status.md (session entry) | "Where You Left Off" section |
-| Bible updates (factual edits or flags) | Architecture, systems, rules |
+| Project docs updates (factual edits or flags) | Architecture, systems, rules |
 | feedback_*.md (user preferences) | Behavioral rules |
 | project_*.md (project state) | Project context |
 | reference_*.md (tools/resources) | Tool/resource lookups |

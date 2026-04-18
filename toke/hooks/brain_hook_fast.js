@@ -127,11 +127,8 @@ function computeSignals(prompt, contextTokens, manifest) {
 function detectProjectDomain(cwd) {
   if (!cwd) return null;
   const lower = cwd.toLowerCase().replace(/\\/g, '/');
-  if (lower.includes('sworder') || lower.includes('/myproject/') || lower.includes('.uproject')) return 'ue5';
+  if (lower.includes('/myproject/') || lower.includes('.uproject')) return 'ue5';
   if (lower.includes('toke')) return 'toke';
-  if (lower.includes('quantified')) return 'quantified';
-  if (lower.includes('forge3d')) return 'forge3d';
-  if (lower.includes('buddy')) return 'buddy';
   if (lower.includes('enigma')) return 'enigma';
   if (lower.includes('ribbz')) return 'ribbz';
   if (lower.includes('career-ops') || lower.includes('career_ops')) return 'career-ops';

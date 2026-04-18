@@ -366,9 +366,9 @@ This is a ONE-SHOT Bash tool call. Not an Edit. Not queued. The shell writes dir
 
 **PARALLEL FILE READ (v3.0)**: Load ALL Critical + High priority files in a **SINGLE message** using multiple simultaneous Read tool calls before analysis begins. Do not read files one-at-a-time sequentially. One message = all priority files loaded simultaneously. This enables cross-file pattern detection from the start and cuts setup time. Medium + Low priority files can be batched in a second parallel message if needed.
 
-**BIBLE CROSS-REFERENCE (v3.0)**: For UE5 Game Code targets — read project reference docs BEFORE scoring. Per SL-004: project docs provides 90%+ of architectural context. The 7 Laws in this skill are distilled from the same sources that informed project reference docs — cross-reference to catch project-specific patterns and tuning values.
+**PROJECT DOCS CROSS-REFERENCE (v3.0)**: If the project maintains canonical documentation — read it BEFORE scoring. Per SL-004: project docs typically provide 90%+ of architectural context. The 7 Laws in this skill are distilled from the same sources that typically inform project docs — cross-reference to catch project-specific patterns and tuning values.
 
-**SOURCE CITATION (v3.0)**: When making claims about external patterns, best practices, or architectural standards during analysis — cite the source tier: `[Law N]` (internal law), `[project docs Ch.N]` (project docs), `[T1]`/`[T2]`/`[T3]` (external source). Claims without a source tier are marked `[OPINION]` and carry less weight in gap scoring. This ensures the diagnostic report is fully auditable.
+**SOURCE CITATION (v3.0)**: When making claims about external patterns, best practices, or architectural standards during analysis — cite the source tier: `[Law N]` (internal law), `[Docs Ch.N]` (project docs), `[T1]`/`[T2]`/`[T3]` (external source). Claims without a source tier are marked `[OPINION]` and carry less weight in gap scoring. This ensures the diagnostic report is fully auditable.
 
 4. **Run the Fluidity Checklist** on system connections
 5. **Compute Complexity Metrics** per file:

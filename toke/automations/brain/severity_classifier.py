@@ -263,15 +263,11 @@ def _detect_project_domain(cwd: str | None) -> str | None:
     if not cwd:
         return None
     cwd_lower = cwd.lower().replace("\\", "/")
-    # UE5 project detection: Sworder project dir or UE5 project structure
-    if any(marker in cwd_lower for marker in ("sworder", "/myproject/", ".uproject")):
+    # UE5 project detection via UE5-canonical markers
+    if any(marker in cwd_lower for marker in ("/myproject/", ".uproject", "/content/", "/source/")):
         return "ue5"
     if "toke" in cwd_lower:
         return "toke"
-    if "quantified" in cwd_lower:
-        return "quantified"
-    if "forge3d" in cwd_lower:
-        return "forge3d"
     if "buddy" in cwd_lower:
         return "buddy"
     if "enigma" in cwd_lower:

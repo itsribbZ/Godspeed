@@ -334,7 +334,6 @@ keywords = [
     "UE5",
     "UE 5",
     "unreal engine",
-    "sworder",
 ]
 min_file_refs = 1
 require_all = true
@@ -343,7 +342,7 @@ min_score = 0.80
 # ----- UE5 mention floor: mentioning UE5 alone => at least Sonnet (not Haiku) -----
 [guardrails.ue5_mention_floor]
 description = "Any UE5 mention floors to Sonnet (Haiku is wrong for any UE5 context)"
-domain_tags = ["ue5"]  # v2.4: suppress in non-UE5 projects (mentioning Sworder in Toke is meta-discussion)
+domain_tags = ["ue5"]  # v2.4: suppress in non-UE5 projects (mentioning UE5 terms outside UE5 is meta-discussion)
 keywords = [
     "UPROPERTY",
     "UCLASS",
@@ -352,7 +351,6 @@ keywords = [
     "UE5",
     "UE 5",
     "unreal engine",
-    "sworder",
 ]
 min_score = 0.22   # S2 floor
 
@@ -845,7 +843,6 @@ max_score = 0.15
 
 # ============================================================================
 # Skill → tier assignments (skill override beats score-based classification)
-# Based on 2026-04-10 audit of the user's 32 skills.
 # Skills not listed here fall back to score-based tier classification.
 # ============================================================================
 [skills]
@@ -858,41 +855,18 @@ profTeam = "S4"
 cycle = "S4"
 godspeed = "S4"
 devTeam = "S4"
-analyst = "S4"
-"ue-knowledge" = "S4"
-bionics = "S4"
-debug = "S4"
-marketbot = "S4"
+zeus = "S4"
 
 # --- Sonnet-safe skills (structured tasks, known patterns) ---
 verify = "S2"
 "close-session" = "S2"
-init = "S2"
-"sworder-init" = "S2"
-"quantified-init" = "S2"
-"forge3d-init" = "S2"
-"buddy-init" = "S2"
-"enigma-init" = "S2"
-"ribbz-init" = "S2"
-"career-ops-init" = "S2"
-"toke-init" = "S2"
-"ue-knowledge-init" = "S2"
-organizer = "S2"
-finder = "S2"
-reference = "S2"
-"blend-master" = "S2"
-player1 = "S2"
-scanner = "S2"
-simplify = "S2"
 brain = "S2"
-"update-config" = "S2"        # Moved from S1 -> S2: edits settings.json; Sonnet is safer for sensitive config work
-
-# --- Haiku-safe skills (lookups, status checks) ---
-sitrep = "S1"
-pulse = "S1"
-find = "S1"
-"knowledge-router" = "S1"     # Sworder knowledge base router; pure lookup (added 2026-04-10 post-audit)
-"keybindings-help" = "S1"
+calliope = "S2"
+clio = "S2"
+urania = "S2"
+mnemos = "S2"
+sybil = "S2"
+oracle = "S2"
 
 # ============================================================================
 # Model metadata — reference data used by brain_cli scan/report commands.

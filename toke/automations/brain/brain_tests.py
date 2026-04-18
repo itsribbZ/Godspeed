@@ -223,28 +223,28 @@ def run_tests() -> int:
     # Test 1: UE5 guardrail fires in UE5 CWD (no regression)
     r = classify(
         prompt_text="add a UPROPERTY macro to MyActor.h for health",
-        cwd="~/Documents/your-game-project/MyProject",
+        cwd="C:/Users/ExampleUser/Documents/MyUEProject/MyProject",
     )
     _v24("UE5 guardrail fires in UE5 CWD", "ue5_code_work" in r.guardrails_fired, f"guards={r.guardrails_fired}")
 
     # Test 2: UE5 guardrail suppressed in Toke CWD (THE BUG FIX)
     r = classify(
-        prompt_text="verify Sworder combat and check MyActor.h references across the pipeline",
-        cwd="~/Desktop/T1/Toke",
+        prompt_text="verify combat subsystem and check MyActor.h references across the pipeline",
+        cwd="C:/Users/ExampleUser/Desktop/Toke",
     )
     _v24("UE5 guardrail suppressed in Toke CWD", "ue5_code_work" not in r.guardrails_fired, f"tier={r.tier} guards={r.guardrails_fired}")
 
     # Test 3: UE5 mention floor suppressed in non-UE5 CWD
     r = classify(
-        prompt_text="what is sworder's current build state",
-        cwd="~/Desktop/T1/Toke",
+        prompt_text="what is the project's current build state",
+        cwd="C:/Users/ExampleUser/Desktop/Toke",
     )
     _v24("UE5 mention floor suppressed in Toke CWD", "ue5_mention_floor" not in r.guardrails_fired, f"tier={r.tier} guards={r.guardrails_fired}")
 
     # Test 4: Non-domain-tagged guardrail still fires regardless of CWD
     r = classify(
         prompt_text="design the event dispatch architecture with strategy pattern",
-        cwd="~/Desktop/T1/Toke",
+        cwd="C:/Users/ExampleUser/Desktop/Toke",
     )
     _v24("architecture_work fires regardless of CWD", "architecture_work" in r.guardrails_fired, f"guards={r.guardrails_fired}")
 
@@ -264,9 +264,8 @@ def run_tests() -> int:
 
     # Test 7: domain detection helper
     from severity_classifier import _detect_project_domain
-    _v24("domain detection: Sworder = ue5", _detect_project_domain("~/Documents/your-game-project/MyProject") == "ue5")
-    _v24("domain detection: Toke = toke", _detect_project_domain("~/Desktop/T1/Toke") == "toke")
-    _v24("domain detection: your-trading-project = quantified", _detect_project_domain("~/Desktop/T1/your-trading-project") == "quantified")
+    _v24("domain detection: UE5 project = ue5", _detect_project_domain("C:/Users/ExampleUser/Documents/MyUEProject/MyProject") == "ue5")
+    _v24("domain detection: Toke = toke", _detect_project_domain("C:/Users/ExampleUser/Desktop/Toke") == "toke")
     _v24("domain detection: None = None", _detect_project_domain(None) is None)
 
     # v2.5 feature tests

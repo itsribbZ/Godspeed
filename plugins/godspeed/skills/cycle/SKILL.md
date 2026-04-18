@@ -163,8 +163,8 @@ from bifrost_pdf import BifrostPDF, BifrostTheme as T
 pdf = BifrostPDF(
     title="[Topic] — 3-Cycle Blueprint",
     subtitle="Iterative Refinement: Blueprint + DevTeam + Professor",
-    output_path=r"~/Desktop\your project721\Docs\Design Systems\Research\Cycle_[Topic].pdf",
-    footer="SWORDER:721 // Cycle Blueprint // [Topic]"
+    output_path=r"~/Desktop/[Project]/Docs/Research/Cycle_[Topic].pdf",
+    footer="[Project] // Cycle Blueprint // [Topic]"
 )
 ```
 

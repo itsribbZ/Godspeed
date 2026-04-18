@@ -107,13 +107,13 @@ Only run these when the session warrants it. Skip for brief/conversation-only se
 
 ### 4a. Bible Sync — IF session changed facts the Bible documents
 
-Trigger: session modified architecture, systems, counts, performance numbers, known issues, or source structure that the Bible describes.
+Trigger: session modified architecture, systems, counts, performance numbers, known issues, or source structure that the project docs describe.
 
-Projects often maintain a long-form "bible" document (architecture, systems, counts, known issues). If the session changed load-bearing facts that belong in such a doc:
+Projects often maintain canonical long-form docs (architecture, systems, counts, known issues). If the session changed load-bearing facts that belong in such docs:
 
-- **If the bible is a markdown file in the repo** → edit directly. Surgical edits only. Update the `Last Updated` date.
-- **If the bible is a PDF or external doc** → list specific changes under a `BIBLE UPDATES NEEDED` section in the session status entry. The user will apply them externally.
-- **If no bible exists** → skip.
+- **If the docs are markdown files in the repo** → edit directly. Surgical edits only. Update the `Last Updated` date.
+- **If the docs are PDF or external** → list specific changes under a `DOCS UPDATES NEEDED` section in the session status entry. The user will apply them externally.
+- **If no canonical docs exist** → skip.
 
 **Update when:** Factual corrections, new permanent systems, removed systems, updated counts/lists, source structure changes, performance numbers, known issues resolved.
 
@@ -199,7 +199,7 @@ SAVED TO MEMORY:
 SKILL LEARNINGS:
   - [skills that got a new _learnings.md entry this session, or "none"]
 
-BIBLE: [Updated / No changes needed / Updates flagged]
+PROJECT DOCS: [Updated / No changes needed / Updates flagged]
 
 TOKE SYSTEMS: [if active]
   Brain: [N] decisions, [N] tool calls, tick [N]

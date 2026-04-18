@@ -653,7 +653,7 @@ The interfaces between Trinity, devTeam, and profTeam are defined as structured 
 {
   "research_targets": ["string — from devTeam gaps, NOT broad topics"],
   "topic_classification": "string — auto-classified from gap descriptions",
-  "context": { "target_files": ["string"], "bible_chapters": ["string"], "existing_research": ["string"] },
+  "context": { "target_files": ["string"], "docs_sections": ["string"], "existing_research": ["string"] },
   "constraints": { "max_agents": "int", "agent_d_mandatory": true, "agent_e_mandatory": "bool — true if existing code" }
 }
 ```

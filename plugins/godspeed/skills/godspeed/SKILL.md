@@ -10,6 +10,113 @@ model: opus
 
 When the user says `godspeed`, this mode stays active for the whole prompt. It changes HOW every tool operates.
 
+> 🔍 **INFO MODE CHECK (FIRST READ):** If the user's prompt matches `godspeed info`, `/godspeed info`, `/godspeed:godspeed-info`, `godspeed summary`, `godspeed overview`, `godspeed help`, `godspeed pipeline`, `show godspeed`, or any similar "tell me about godspeed" phrasing (case-insensitive) → **jump immediately to the "Info Mode — Pipeline Summary" section below, render it with the LIVE tick count, and STOP**. Info mode is read-only metadata. Do NOT run Phase -1 tick. Do NOT triage. Do NOT execute any tools. Render and stop.
+
+---
+
+## Info Mode — Pipeline Summary (short-circuit render-and-stop)
+
+**Triggers:** `godspeed info`, `/godspeed info`, `/godspeed:godspeed-info`, `godspeed summary`, `godspeed overview`, `godspeed help`, `godspeed pipeline`, `show godspeed`, or similar meta-queries about godspeed itself (not execution requests).
+
+**Rendering protocol:**
+1. Read `~/.claude/telemetry/brain/godspeed_count.txt` with the `Read` tool to get current tick count. If the file is missing or unreadable, use `0` as fallback.
+2. Compute `next_scan_at` = the smallest multiple of 33 that is strictly greater than `current_tick`. (If current=0, next=33. If current=5, next=33. If current=33, next=66. If current=40, next=66.)
+3. Compute `runs_away` = `next_scan_at - current_tick`.
+4. Render the template below with `{TICK}`, `{NEXT_SCAN}`, `{RUNS_AWAY}` substituted. Output it inside a single monospaced code block so ASCII art alignment survives.
+5. After rendering → **STOP**. No further tool calls, no triage, no Phase -1, no execution. Info mode is pure metadata display. Write one short closing line (e.g., `Info mode: rendered. Say "godspeed" for execution mode.`) and end the turn.
+
+**Template (substitute `{TICK}` / `{NEXT_SCAN}` / `{RUNS_AWAY}` with live values):**
+
+```
+═══════════════════════════════════════════════════════════════
+  GODSPEED — MAX EXECUTION MODE PIPELINE
+═══════════════════════════════════════════════════════════════
+
+  EXECUTION FLOW (every godspeed invocation)
+  ──────────────────────────────────────────
+
+   [-1] TICK        Count use + auto-scan every 33
+                    (current: {TICK} | next scan: {NEXT_SCAN} | {RUNS_AWAY} runs away)
+        │
+        ▼
+   [0.5] SCORE      Brain tier check (S0-S5) — auto-dispatch Zeus on S3+
+        │
+        ▼
+   [ 1] TRIAGE      Detect priority P0→P3, root-cause batch
+        │
+        ▼
+   [ 2] ROUTE       S0-S2 → direct handle; S3+ → Zeus orchestrator
+        │
+        ▼
+   [ 3] DEPLOY      Fire tools/MUSES in parallel
+        │
+        ▼
+   [ 4] ESCALATE    L1 narrow → L2 instrument → L3 research →
+                    L3.5 Sybil advisor (Sonnet stuck → Opus rescue) →
+                    L4 ask user → L5 flag blocker
+        │
+        ▼
+   [ 5] RECONCILE   Zero-missed-tasks verification
+        │
+        ▼
+   [ 6] LEARN       zeus gate-write → Mnemos Recall + Oracle verdict
+
+  SHIPPED SKILLS (17 total — domain-agnostic methodology)
+  ───────────────────────────────────────────────────────
+
+   HOMER PANTHEON (orchestrator-worker stack)
+             zeus            L2 Orchestrator — decomposes S3+ tasks
+             calliope        L3 Epic Research Muse (web + synthesis)
+             clio            L3 Code Archaeology Muse (file:line maps)
+             urania          L3 Measurement Muse (telemetry receipts)
+             sybil           L4 Advisor escalation (advisor_20260301)
+             mnemos          L5 3-tier memory (Core/Recall/Archival)
+             oracle          L7 Critic (scores synthesis, gates writes)
+             brain           L1 Severity classifier (S0-S5 router)
+
+   PIPELINE SKILLS (methodology)
+             holy-trinity    Diagnose → Research → Implement → Verify
+             devTeam         Code architecture scoring (7 Laws)
+             profTeam        Multi-agent parallel research engine
+             professor       Single-topic deep research + PDF
+             blueprint       Implementation plan from codebase
+             cycle           3-pass Blueprint refinement
+
+   UTILITY SKILLS
+             close-session   Session closure + learning persistence
+             verify          Build/test verification (multi-stack)
+             godspeed        This skill (max-execution mode)
+
+  BRAIN ROUTING (always active, zero config)
+  ──────────────────────────────────────────
+
+   Subagents    → Sonnet  (CLAUDE_CODE_SUBAGENT_MODEL env var)
+   Skills       → Pinned  (tier frontmatter S0-S4 per skill)
+   Advisor API  → L3.5    (Sonnet stuck → Opus rescue via advisor_20260301)
+   Self-audit   → every 33 ticks (inline `brain scan`)
+
+  TRIGGERS
+  ────────
+
+   "godspeed"              → full max execution mode
+   "godspeed info"         → this pipeline summary (you are here)
+   "/godspeed:godspeed-info" → same (plugin command form)
+   L3 stuck mid-task       → L3.5 Sybil advisor (max 2/session)
+   Every 33 ticks          → inline brain scan self-audit
+
+  SACRED RULES ACTIVE
+  ───────────────────
+
+   #1  Truthful          #2  No delete         #3  No revert
+   #4  Only-asked        #5  Diag=feature     #6  No creative
+   #7  Edit only         #8  No auto-close    #9  No menus
+   #10 godspeed=trigger  #11 AAA quality
+
+═══════════════════════════════════════════════════════════════
+```
+
+**After rendering, output one closing line and stop.** Do not continue into Core Rules, do not triage, do not execute anything. Info mode is render-and-stop.
+
 ---
 
 ## Core Rules
