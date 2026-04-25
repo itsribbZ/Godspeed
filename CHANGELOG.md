@@ -2,6 +2,16 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.3.5] - 2026-04-24
+### Fixed
+- Private project-name leaks scrubbed from `plugins/godspeed/shared/_shared_learnings.md` (3 references in SL-050 / SL-055 metadata + detail)
+
+### Removed
+- Hard-coded private-project detection branches in `toke/automations/brain/severity_classifier.py` and `toke/hooks/brain_hook_fast.js`. The shipped versions now only detect `ue5` and `toke` domains. End-users who fork can register their own project detection without shipping the maintainer's private project names.
+
+### Changed
+- `RELEASE.md` pre-tag scrub command expanded to catch private project-name patterns in addition to personal-name patterns. Prevents future leaks at release time.
+
 ## [2.3.4] - 2026-04-18
 ### Fixed
 - Personal path leaks scrubbed from `toke/` standalone install target (13 files)
@@ -66,5 +76,6 @@ All notable changes to godspeed are tracked here. Versioning follows [SemVer](ht
 ## [1.0.0] - Initial release
 - godspeed as Claude Code plugin
 
+[2.3.5]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.5
 [2.3.4]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.4
 [2.2.0]: https://github.com/itsribbZ/godspeed/releases/tag/v2.2.0

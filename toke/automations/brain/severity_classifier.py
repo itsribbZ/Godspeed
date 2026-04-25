@@ -268,14 +268,6 @@ def _detect_project_domain(cwd: str | None) -> str | None:
         return "ue5"
     if "toke" in cwd_lower:
         return "toke"
-    if "buddy" in cwd_lower:
-        return "buddy"
-    if "enigma" in cwd_lower:
-        return "enigma"
-    if "ribbz" in cwd_lower:
-        return "ribbz"
-    if "career-ops" in cwd_lower or "career_ops" in cwd_lower:
-        return "career-ops"
     return None
 
 

@@ -32,8 +32,8 @@ echo "skills: $(ls plugins/godspeed/skills/ | wc -l)"
 echo "commands: $(ls plugins/godspeed/commands/ | wc -l)"
 python -c "import json; print('hooks:', len(json.load(open('plugins/godspeed/hooks/hooks.json'))['hooks']))"
 
-# Verify zero personal leaks (should return nothing)
-grep -rn "jbro1\|Ribbz\|the user wants\|Desktop/T1" plugins/ toke/ README.md install.sh install.ps1 LICENSE 2>/dev/null | grep -v __pycache__
+# Verify zero personal leaks AND zero private-project-name leaks (should return nothing)
+grep -rn "jbro1\|Ribbz\|the user wants\|Desktop/T1\|bionics\|Bionics\|sworder\|Sworder\|quantified\|your-trading-project\|forge3d\|your-3d-project\|enigma-init\|enigma_vault\|buddy-init\|ribbz-init\|career-ops\|career_ops" plugins/ toke/ README.md install.sh install.ps1 LICENSE 2>/dev/null | grep -v __pycache__
 
 # Verify git state is clean
 git status --short

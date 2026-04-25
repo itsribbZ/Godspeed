@@ -129,9 +129,6 @@ function detectProjectDomain(cwd) {
   const lower = cwd.toLowerCase().replace(/\\/g, '/');
   if (lower.includes('/myproject/') || lower.includes('.uproject')) return 'ue5';
   if (lower.includes('toke')) return 'toke';
-  if (lower.includes('enigma')) return 'enigma';
-  if (lower.includes('ribbz')) return 'ribbz';
-  if (lower.includes('career-ops') || lower.includes('career_ops')) return 'career-ops';
   return null;
 }
 
