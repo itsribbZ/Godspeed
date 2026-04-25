@@ -2,6 +2,11 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.3.8] - 2026-04-25
+### Changed
+- All narrative references to the maintainer's first name in tracked files (90 occurrences across 31 files — comments, docstrings, README narrative, SKILL.md descriptions, test descriptions) replaced with neutral `the user` / `the user's`. Methodology and behavior unchanged; persona neutralized for public package. Author identity remains as the `Ribbz` alias in `plugin.json`, `marketplace.json`, `LICENSE`, and recent commit history.
+- `RELEASE.md` scrub regex hardened: added `\bJacob\b` word-boundary pattern to catch any future standalone first-name leak. The literal `Ribbz` and `the user wants` patterns retained for completeness.
+
 ## [2.3.7] - 2026-04-25
 ### Fixed
 - SL-029 in `plugins/godspeed/shared/_shared_learnings.md` — replaced verbatim project-portfolio list with a neutral domain summary. The cognitive-load finding (12+ concurrent projects, primary <10% of session volume) is preserved; the maintainer's specific project names are not. Surfaced by deep pre-push audit (this entry survived prior scrubs because the regex didn't include these particular project names).
@@ -89,6 +94,7 @@ All notable changes to godspeed are tracked here. Versioning follows [SemVer](ht
 ## [1.0.0] - Initial release
 - godspeed as Claude Code plugin
 
+[2.3.8]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.8
 [2.3.7]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.7
 [2.3.6]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.6
 [2.3.5]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.5
