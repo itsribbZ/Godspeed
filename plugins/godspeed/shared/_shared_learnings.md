@@ -198,7 +198,7 @@
 - **Applies to**: ALL skills assessing user capacity or workload
 - **Confidence**: HIGH (verified by file counts across all project directories)
 - **Last validated**: 2026-03-28
-- **Detail**: In any 10-day period, the user runs 500+ sessions across 12+ projects (your project, your-trading-project, your-study-project, AnimBPDoctor, T3, atelier, Sentinel, Your-Automation-Skill, SemperFidelis, Kashi, syncscout, forge3D). your project is the primary game project but represents <10% of total session volume. Any skill assessing cognitive load, scope management, or capacity should account for this parallel project portfolio. Context-switching across 12+ projects with different tech stacks is a significant cognitive signal.
+- **Detail**: In any 10-day period, the user runs 500+ sessions across 12+ projects (spanning game development, ML/AI, trading, security tooling, and learning tracks — distinct repos with different tech stacks). The primary project represents <10% of total session volume. Any skill assessing cognitive load, scope management, or capacity should account for this parallel project portfolio. Context-switching across 12+ projects with different tech stacks is a significant cognitive signal.
 
 ### [SL-030] UE5 engine source reading beats web search for Slate internals
 - **Source skill**: professor

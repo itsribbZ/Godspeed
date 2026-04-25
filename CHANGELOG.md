@@ -2,6 +2,10 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.3.7] - 2026-04-25
+### Fixed
+- SL-029 in `plugins/godspeed/shared/_shared_learnings.md` — replaced verbatim project-portfolio list with a neutral domain summary. The cognitive-load finding (12+ concurrent projects, primary <10% of session volume) is preserved; the maintainer's specific project names are not. Surfaced by deep pre-push audit (this entry survived prior scrubs because the regex didn't include these particular project names).
+
 ## [2.3.6] - 2026-04-24
 ### Changed
 - README: replaced unverifiable "69.0% / 200-prompt held-out eval" claim with honest framing — the eval harness ships, the golden set does not. Maintainer's internal numbers (75.6% / 299-prompt at v2.7) cited as reference, not reproduction target.
@@ -85,6 +89,7 @@ All notable changes to godspeed are tracked here. Versioning follows [SemVer](ht
 ## [1.0.0] - Initial release
 - godspeed as Claude Code plugin
 
+[2.3.7]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.7
 [2.3.6]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.6
 [2.3.5]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.5
 [2.3.4]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.4
