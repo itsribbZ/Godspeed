@@ -15,12 +15,10 @@ Zero fork of Claude Code. Everything wires in through the hook API.
 
 | | |
 |---|---|
-| **Cost** | ~30–50% measured savings at quality parity. $750/month saved on $15K/month Opus spend via subagent routing alone. |
-| **Accuracy** | Classifier scores 69.0% exact on a 200-prompt held-out eval. Beats the best naive baseline by +31.5 percentage points. |
-| **Latency** | Fast-path hook at ~90 ms warm, ~160 ms cold. |
+| **Cost** | Subagent auto-routing on a typical heavy-Opus workload (~$15K/mo) projects ~$750/mo savings; auto-orchestration on S3+ tasks projects an additional $600–1,200/mo. Numbers depend on prompt mix — instrument with `brain scan` against your own telemetry. |
+| **Accuracy** | Classifier evaluation harness ships in `toke/automations/brain/eval/`. Bring your own labeled set (`golden_set.json`) and run `brain_vs_baselines.py` to compare against majority-class, keyword-only, length-only, and random baselines. The maintainer's internal 299-prompt set scores **75.6% exact / 0.875 weighted** at v2.7. Your numbers will vary by prompt distribution. |
+| **Latency** | Fast-path hook ~90 ms warm, ~160 ms cold. Measured on Windows 10 / Node 18. |
 | **Compounding** | Every successful synthesis lands in a vector-embedded memory. Next session's similar prompt retrieves the prior answer in milliseconds. |
-
-Reproduce the benchmark locally: `python toke/automations/brain/eval/brain_vs_baselines.py --json out.json`.
 
 ---
 
@@ -124,22 +122,49 @@ Type `close session` when your work is done. Decisions, learnings, and memory wr
 
 ```
 godspeed/
-├── README.md          ← this file (the trigger pitch)
-├── install.sh         ← one-command install (macOS / Linux / Git Bash)
-├── install.ps1        ← Windows PowerShell installer
-├── LICENSE            ← MIT
-└── toke/              ← the engine
-    ├── README.md      ← detailed architecture + design docs
-    ├── skills/        ← 16 Claude Code skills (installer copies to ~/.claude/skills/)
-    ├── commands/      ← 2 slash commands (installer copies to ~/.claude/commands/)
-    ├── hooks/         ← Claude Code lifecycle hook scripts
-    ├── automations/   ← classifier + orchestrator + maintenance agents
-    ├── pipeline/      ← 8-stage measurement of Claude Code internals
-    ├── tokens/        ← cost-accounting tools
-    └── research/      ← literature review that fed the classifier design
+├── README.md             ← this file (the trigger pitch)
+├── CHANGELOG.md          ← version history
+├── RELEASE.md            ← maintainer release process
+├── LICENSE               ← MIT
+├── install.sh            ← Option B installer (macOS / Linux / Git Bash)
+├── install.ps1           ← Option B installer (Windows PowerShell)
+├── .claude-plugin/       ← marketplace manifest (Option A)
+├── .github/workflows/    ← CI (validates manifests + counts on every push)
+├── plugins/godspeed/     ← Option A — Claude Code plugin install target
+│   ├── .claude-plugin/   ← plugin.json (canonical version + description)
+│   ├── skills/           ← 18 skills
+│   ├── commands/         ← 3 slash commands
+│   ├── hooks/            ← 5 lifecycle hooks + hooks.json manifest
+│   ├── automations/      ← Python runtime (classifier + orchestrator)
+│   └── shared/           ← shared protocols + learnings + PDF contract
+└── toke/                 ← Option B — install.sh / install.ps1 install target
+    ├── README.md         ← detailed architecture + design docs
+    ├── skills/           ← 16 skills (installer copies to ~/.claude/skills/)
+    ├── commands/         ← 2 slash commands
+    ├── hooks/            ← Claude Code lifecycle hook scripts
+    ├── automations/      ← runtime mirror of plugins/godspeed/automations/
+    ├── pipeline/         ← 8-stage measurement of Claude Code internals
+    ├── tokens/           ← cost-accounting tools
+    └── research/         ← literature review that fed the classifier design
 ```
 
-Godspeed (the trigger) is one skill inside `toke/skills/`. It's what fires when you type the word. Everything else in `toke/` is the machinery that skill commands.
+The `godspeed` skill itself ships in **both** install paths — `plugins/godspeed/skills/godspeed/` for Option A, `toke/skills/godspeed/` for Option B. Everything else in either tree is the machinery that skill commands.
+
+### What each install path includes
+
+The two install paths ship **different curated skill sets** — not the same set with different packaging:
+
+| Skill | Option A (plugin) | Option B (install.sh) |
+|---|:-:|:-:|
+| brain, calliope, clio, close-session, godspeed, mnemos, oracle, sybil, urania, verify, zeus | ✅ | ✅ |
+| blueprint, cycle, devTeam, holy-trinity, init, profTeam, professor | ✅ | — |
+| aurora, hesper, nyx, sitrep, toke-init | — | ✅ |
+| **Total** | **18** | **16** |
+
+- **Option A** ships the full **research/review pipeline** (devTeam architecture scoring, profTeam multi-agent research, holy-trinity diagnose-research-implement-verify loop, professor + blueprint + cycle for deep planning).
+- **Option B** exclusively adds the **maintenance + introspection** stack (aurora weight-tuning, hesper learning distillation, nyx skill-description auditing, sitrep cross-project status, toke-init session loader).
+
+If you want both sets, install Option A via the plugin, then run `bash install.sh` — Option B's installer preserves existing skills with the same name unless `--force` is passed, so it'll only add the unique-to-B skills.
 
 ---
 

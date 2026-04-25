@@ -6,19 +6,24 @@
 
 ## Benchmark
 
-200-prompt held-out evaluation. Reproduce with `python automations/brain/eval/brain_vs_baselines.py --json out.json`.
+The evaluation harness (`automations/brain/eval/brain_vs_baselines.py`) compares the classifier against four naive baselines (majority-class, keyword-only, length-only, random). It does NOT ship a labeled golden set — bring your own as `automations/brain/eval/golden_set.json`:
 
-| Classifier | Exact | Weighted | Wrong |
-|---|---:|---:|---:|
-| **Toke v2.6.3** | **69.0%** | **0.843** | **1** |
-| Majority-class baseline (always S3) | 37.5% | 0.603 | 34 |
-| Keyword-only | 28.5% | 0.490 | 61 |
-| Length-only | 25.0% | 0.532 | 37 |
-| Random (seed=42) | 17.0% | 0.320 | 106 |
+```json
+[
+  {"prompt": "list files here", "expected": "S0"},
+  {"prompt": "refactor my distributed cache across 4 files", "expected": "S4"}
+]
+```
 
-Toke beats the best naive baseline by **+31.5 percentage points** on exact match. One misclassification in 200; 199/200 are either exact or one tier off (same model in most cases).
+Then:
 
-**Cost impact, measured on ~$15K/month Opus spend:** subagent routing alone saves ~$750/month. Auto-orchestration on S3+ tasks projects an additional $600–1,200/month at quality parity (per Anthropic's multi-agent research eval — see references).
+```bash
+python automations/brain/eval/brain_vs_baselines.py --json out.json
+```
+
+The maintainer's internal eval (299-prompt held-out set, not shipped) scores **75.6% exact / 0.875 weighted, 226/299 exact and 2 wrong** at v2.7. Your numbers will vary by prompt distribution.
+
+**Cost impact (projection, not measurement):** subagent auto-routing on heavy-Opus workloads (~$15K/month spend) projects ~$750/month savings; auto-orchestration on S3+ tasks projects an additional $600–1,200/month at quality parity (per Anthropic's multi-agent research eval — see references). Run `brain scan` against your own telemetry for actuals.
 
 ---
 
@@ -137,7 +142,8 @@ python automations/brain/brain_cli.py score "design a distributed caching layer"
 
 ```bash
 python automations/brain/brain_cli.py scan
-# Total spend: $15,644 | Subagent-routing savings projection: $753
+# Total spend: $XXXX | Subagent-routing savings projection: $XXX
+# (output reflects your own session telemetry — first-time users see $0 until decisions accumulate)
 ```
 
 ### Run the orchestrator synthesis → memory pipeline in Python

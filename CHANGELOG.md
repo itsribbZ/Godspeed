@@ -2,6 +2,15 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.3.6] - 2026-04-24
+### Changed
+- README: replaced unverifiable "69.0% / 200-prompt held-out eval" claim with honest framing — the eval harness ships, the golden set does not. Maintainer's internal numbers (75.6% / 299-prompt at v2.7) cited as reference, not reproduction target.
+- README: cost claims reframed as projections rather than measurements; tied to `brain scan` for user-specific actuals.
+- README: repo-layout diagram updated to show actual structure (was missing `plugins/`, `.claude-plugin/`, `CHANGELOG.md`, `RELEASE.md`, `.github/workflows/`).
+- README: added "What each install path includes" table — Option A and Option B ship different curated skill sets (11 overlap, 7 unique to A, 5 unique to B).
+- `toke/README.md`: same accuracy + cost rewording as root README; added inline `golden_set.json` schema example.
+- `toke/README.md`: `brain scan` example output replaced with placeholder — first-time users would have seen $0 against the previous specific-dollar example.
+
 ## [2.3.5] - 2026-04-24
 ### Fixed
 - Private project-name leaks scrubbed from `plugins/godspeed/shared/_shared_learnings.md` (3 references in SL-050 / SL-055 metadata + detail)
@@ -76,6 +85,7 @@ All notable changes to godspeed are tracked here. Versioning follows [SemVer](ht
 ## [1.0.0] - Initial release
 - godspeed as Claude Code plugin
 
+[2.3.6]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.6
 [2.3.5]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.5
 [2.3.4]: https://github.com/itsribbZ/godspeed/releases/tag/v2.3.4
 [2.2.0]: https://github.com/itsribbZ/godspeed/releases/tag/v2.2.0
