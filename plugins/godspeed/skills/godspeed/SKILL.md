@@ -16,7 +16,7 @@ When the user says `godspeed`, this mode stays active for the whole prompt. It c
 
 ## Info Mode — Pipeline Summary (short-circuit render-and-stop)
 
-**Triggers:** `godspeed info`, `/godspeed info`, `/godspeed:godspeed-info`, `godspeed summary`, `godspeed overview`, `godspeed help`, `godspeed pipeline`, `show godspeed`, or similar meta-queries about godspeed itself (not execution requests).
+**Triggers:** `godspeed info`, `/godspeed info`, `/godspeed-info`, `godspeed summary`, `godspeed overview`, `godspeed help`, `godspeed pipeline`, `show godspeed`, or similar meta-queries about godspeed itself (not execution requests).
 
 **Rendering protocol:**
 1. Read `~/.claude/telemetry/brain/godspeed_count.txt` with the `Read` tool to get current tick count. If the file is missing or unreadable, use `0` as fallback.
@@ -29,88 +29,105 @@ When the user says `godspeed`, this mode stays active for the whole prompt. It c
 
 ```
 ═══════════════════════════════════════════════════════════════
-  GODSPEED — MAX EXECUTION MODE PIPELINE
+  GODSPEED v4.10 — MAX EXECUTION MODE
 ═══════════════════════════════════════════════════════════════
 
-  EXECUTION FLOW (every godspeed invocation)
-  ──────────────────────────────────────────
+  PIPELINE FLOW
+  ─────────────
 
-   [-1] TICK        Count use + auto-scan every 33
-                    (current: {TICK} | next scan: {NEXT_SCAN} | {RUNS_AWAY} runs away)
-        │
-        ▼
-   [0.5] SCORE      Brain tier check (S0-S5) — auto-dispatch Zeus on S3+
-        │
-        ▼
-   [ 1] TRIAGE      Detect priority P0→P3, root-cause batch
-        │
-        ▼
-   [ 2] ROUTE       S0-S2 → direct handle; S3+ → Zeus orchestrator
-        │
-        ▼
-   [ 3] DEPLOY      Fire tools/MUSES in parallel
-        │
-        ▼
-   [ 4] ESCALATE    L1 narrow → L2 instrument → L3 research →
-                    L3.5 Sybil advisor (Sonnet stuck → Opus rescue) →
-                    L4 ask user → L5 flag blocker
-        │
-        ▼
-   [ 5] RECONCILE   Zero-missed-tasks verification
-        │
-        ▼
-   [ 6] LEARN       zeus gate-write → Mnemos Recall + Oracle verdict
+   [-1]   TICK              Self-audit counter (every 33 ticks → brain scan)
+                            current: {TICK}  next: {NEXT_SCAN}  ({RUNS_AWAY} away)
+          │
+          ▼
+   [0.5]  BRAIN             Severity classify S0–S5 → tier→model bind
+          │                 (S0/S1=Haiku · S2/S3=Sonnet · S4/S5=Opus)
+          │                 S3+ → auto-dispatch Zeus
+          │
+          ▼
+   [1-3]  TRIAGE → ROUTE → DEPLOY
+          │                 Domain-adaptive priority P0→P3, Pipeline Router,
+          │                 parallel tool execution where possible
+          │
+          ▼
+   [3i]   COST GUARD        Mid-flight budget enforcement (1.5× soft-cap)
+          │                 Verdict: OK / BUDGET_EXCEEDED
+          │                 Receipts → ~/.claude/telemetry/brain/cost_efficiency.jsonl
+          │
+          ▼
+   [4]    ESCALATE          L1 narrow → L2 instrument → L3 research →
+          │                 L3.5 advisor (Sonnet stuck → Opus rescue) →
+          │                 L4 ask user → L5 flag blocker
+          │
+          ▼
+   [5]    RECONCILE         Zero-missed-tasks verification
+          │
+          ▼
+   [6]    LEARN             zeus gate-write → Oracle score → Mnemos Recall
 
-  SHIPPED SKILLS (17 total — domain-agnostic methodology)
+  SHIPPED SKILLS (18 total — domain-agnostic methodology)
   ───────────────────────────────────────────────────────
 
    HOMER PANTHEON (orchestrator-worker stack)
-             zeus            L2 Orchestrator — decomposes S3+ tasks
-             calliope        L3 Epic Research Muse (web + synthesis)
-             clio            L3 Code Archaeology Muse (file:line maps)
-             urania          L3 Measurement Muse (telemetry receipts)
-             sybil           L4 Advisor escalation (advisor_20260301)
-             mnemos          L5 3-tier memory (Core/Recall/Archival)
-             oracle          L7 Critic (scores synthesis, gates writes)
-             brain           L1 Severity classifier (S0-S5 router)
+       zeus            L2 Orchestrator — decomposes S3+ tasks
+       calliope        L3 Epic Research Muse (web + synthesis)
+       clio            L3 Code Archaeology Muse (file:line maps)
+       urania          L3 Measurement Muse (telemetry receipts)
+       sybil           L4 Advisor escalation (advisor_20260301)
+       mnemos          L5 3-tier memory (Core / Recall / Archival)
+       oracle          L7 Critic — scores synthesis, gates writes
+       brain           L1 Severity classifier (S0-S5 router)
 
    PIPELINE SKILLS (methodology)
-             holy-trinity    Diagnose → Research → Implement → Verify
-             devTeam         Code architecture scoring (7 Laws)
-             profTeam        Multi-agent parallel research engine
-             professor       Single-topic deep research + PDF
-             blueprint       Implementation plan from codebase
-             cycle           3-pass Blueprint refinement
+       holy-trinity    Diagnose → Research → Implement → Verify
+       devTeam         Code architecture scoring (7 Laws)
+       profTeam        Multi-agent parallel research engine
+       professor       Single-topic deep research + PDF
+       blueprint       Implementation plan from codebase
+       cycle           3-pass blueprint refinement
 
    UTILITY SKILLS
-             close-session   Session closure + learning persistence
-             verify          Build/test verification (multi-stack)
-             godspeed        This skill (max-execution mode)
+       close-session   Session closure + learning persistence
+       verify          Build / test verification (multi-stack)
+       init            Project initialization router
+       godspeed        This skill — max-execution mode
+
+  COST GUARD BUDGETS (Phase 3i, per agent invocation)
+  ───────────────────────────────────────────────────
+
+       S0 $0.005    S1 $0.02    S2 $0.10
+       S3 $0.50     S4 $2.00    S5 $5.00
+       1.5× soft-cap → BUDGET_EXCEEDED verdict mid-flight
 
   BRAIN ROUTING (always active, zero config)
   ──────────────────────────────────────────
 
-   Subagents    → Sonnet  (CLAUDE_CODE_SUBAGENT_MODEL env var)
-   Skills       → Pinned  (tier frontmatter S0-S4 per skill)
-   Advisor API  → L3.5    (Sonnet stuck → Opus rescue via advisor_20260301)
-   Self-audit   → every 33 ticks (inline `brain scan`)
+       Severity tiers   S0-S2 → direct tool   |   S3-S5 → Zeus orchestrator
+       Subagents        Sonnet via CLAUDE_CODE_SUBAGENT_MODEL env var
+       Skills           Pinned per skill frontmatter (S-tier)
+       Advisor API      L3.5 — Sonnet stuck → Opus rescue (max 2/session)
+       Self-audit       every 33 ticks → inline `brain scan`
+
+  SLASH COMMANDS
+  ──────────────
+
+       /godspeed-info        This pipeline summary (you are here)
+       /godspeed-settings    Render current routing manifest
+       /brain-score <text>   Classify any prompt on the S0-S5 scale
 
   TRIGGERS
   ────────
 
-   "godspeed"              → full max execution mode
-   "godspeed info"         → this pipeline summary (you are here)
-   "/godspeed:godspeed-info" → same (plugin command form)
-   L3 stuck mid-task       → L3.5 Sybil advisor (max 2/session)
-   Every 33 ticks          → inline brain scan self-audit
+       "godspeed" / GODSPEED   Full max execution mode
+       "stuck" mid-task        L3.5 advisor escalation
+       Every 33 ticks          Inline `brain scan` self-audit
 
-  SACRED RULES ACTIVE
-  ───────────────────
+  SACRED RULES ACTIVE (11)
+  ────────────────────────
 
-   #1  Truthful          #2  No delete         #3  No revert
-   #4  Only-asked        #5  Diag=feature     #6  No creative
-   #7  Edit only         #8  No auto-close    #9  No menus
-   #10 godspeed=trigger  #11 AAA quality
+       #1  Truthful           #2  No delete           #3  No revert
+       #4  Only-asked         #5  Diag = feature      #6  No creative
+       #7  Edit only          #8  No auto-close       #9  No menus
+       #10 godspeed = command #11 AAA quality
 
 ═══════════════════════════════════════════════════════════════
 ```
