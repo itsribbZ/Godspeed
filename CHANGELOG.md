@@ -2,6 +2,20 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.4.2] - 2026-05-08
+### Fixed
+- `/godspeed-info` slash command now renders the current pipeline diagram. Previously it delegated to the `godspeed` skill's `SKILL.md` "Info Mode" section and rendered a stale **v4.2-era** diagram missing every pipeline phase shipped in v2.4.0 — Brain tier check (Phase 0.5) absent, Cost Guard (Phase 3i) absent, the tier→USD budget table absent. The diagram is now baked directly into `commands/godspeed-info.md`, so the command renders the same content regardless of which `godspeed` skill is loaded locally (fixes the user-level-skill shadowing case where a non-plugin `godspeed` skill could leak into the rendered output).
+- Plugin `skills/godspeed/SKILL.md` "Info Mode" template synced to match the slash command. Both surfaces now render the same diagram.
+- Skill count corrected: **17 → 18**. The `init` skill was missing from the previous tier list.
+- Trigger string fixed: `/godspeed:godspeed-info` → `/godspeed-info` (the long namespaced form was a copy from internal docs and is not how users actually invoke the command).
+
+### Added
+- Pipeline diagram now shows: Phase -1 tick · Phase 0.5 Brain · Triage → Route → Deploy · Phase 3i Cost Guard with the tier→USD budget table · Escalate → Reconcile → Learn.
+- New "SLASH COMMANDS" section in the diagram listing `/godspeed-info`, `/godspeed-settings`, `/brain-score` so users can discover the surface.
+
+### Notes
+- Behavior of execution mode (`godspeed` keyword) unchanged — this release only fixes the read-only Info Mode diagram. Hooks, brain classifier, agent dispatcher, cost guard all unchanged.
+
 ## [2.4.1] - 2026-05-06
 ### Fixed
 - `plugins/godspeed/automations/homer/homer_integration_test.py` removed from the plugin install path. The test imports `nyx`, which only ships in the Option B (`install.sh`) tree under `toke/automations/homer/sleep/nyx/` — the plugin tree intentionally does not ship the sleep engines (per the v2.3.6 install-path curation rule). Shipping this test in the plugin tree caused `ModuleNotFoundError: No module named 'nyx'` if a user ever tried to run it from a plugin install. The test still ships in the Option B tree where its dependencies actually exist.
