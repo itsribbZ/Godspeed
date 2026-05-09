@@ -1,0 +1,43 @@
+{
+  "manifest_version": "1.0",
+  "scan_date": "2026-05-08",
+  "schema_version": "1.0",
+  "description": "Top-level registry for real subagent personas. agent_runner.py reads this to validate that every agents/<name>.json is listed and every listed agent has a backing JSON. Additive-only — never remove entries; mark obsolete agents status=deprecated in their own JSON. Three starter research-division agents ship with the plugin; add your own under agents/<division>/<name>.json and register here.",
+  "agents": [
+    {
+      "name": "calliope_synthesizer",
+      "division": "research",
+      "registry": "agents/calliope_synthesizer.json",
+      "model": "sonnet",
+      "parent_skill": "calliope",
+      "status": "active",
+      "added": "2026-05-08"
+    },
+    {
+      "name": "clio_archaeologist",
+      "division": "research",
+      "registry": "agents/clio_archaeologist.json",
+      "model": "sonnet",
+      "parent_skill": "clio",
+      "status": "active",
+      "added": "2026-05-08"
+    },
+    {
+      "name": "urania_analyst",
+      "division": "research",
+      "registry": "agents/urania_analyst.json",
+      "model": "sonnet",
+      "parent_skill": "urania",
+      "status": "active",
+      "added": "2026-05-08"
+    }
+  ],
+  "valid_models": ["haiku", "sonnet", "opus"],
+  "valid_modes": ["dry-run", "live", "claude-code"],
+  "telemetry_path": "~/.claude/telemetry/brain/agent_invocations.jsonl",
+  "cost_receipts_path": "~/.claude/telemetry/brain/cost_efficiency.jsonl",
+  "citations": [
+    "automations/director/agents/_SCHEMA.md",
+    "automations/director/README.md"
+  ]
+}

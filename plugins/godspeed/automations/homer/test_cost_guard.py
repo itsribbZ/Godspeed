@@ -186,13 +186,194 @@ def test_invoke_live_breach() -> None:
 
 
 # ----------------------------------------------------------------------------
+# 4. Pricing math (compute_cost_from_usage)
+# ----------------------------------------------------------------------------
+def test_compute_cost_from_usage() -> None:
+    # Haiku: $1 input / $5 output per MTok. 1M input + 1M output = $6.00
+    cost = cost_guard.compute_cost_from_usage(
+        model="haiku", input_tokens=1_000_000, output_tokens=1_000_000,
+    )
+    assert abs(cost - 6.00) < 1e-6, f"haiku 1M+1M expected $6, got ${cost}"
+
+    # Sonnet: $3/$15. 100K input + 50K output = $0.30 + $0.75 = $1.05
+    cost = cost_guard.compute_cost_from_usage(
+        model="claude-sonnet-4-7", input_tokens=100_000, output_tokens=50_000,
+    )
+    assert abs(cost - 1.05) < 1e-6, f"sonnet 100K+50K expected $1.05, got ${cost}"
+
+    # Opus: $15/$75. 10K input + 10K output = $0.15 + $0.75 = $0.90
+    cost = cost_guard.compute_cost_from_usage(
+        model="opus", input_tokens=10_000, output_tokens=10_000,
+    )
+    assert abs(cost - 0.90) < 1e-6, f"opus 10K+10K expected $0.90, got ${cost}"
+
+    # Cache pricing — sonnet cache_read $0.30/MTok, cache_write $3.75/MTok
+    cost = cost_guard.compute_cost_from_usage(
+        model="sonnet", cache_read_tokens=1_000_000, cache_creation_tokens=100_000,
+    )
+    assert abs(cost - (0.30 + 0.375)) < 1e-6, f"sonnet cache 1M read + 100K write expected $0.675, got ${cost}"
+
+    # Unknown model → falls through to sonnet defaults
+    cost = cost_guard.compute_cost_from_usage(
+        model="unknown-model", input_tokens=1_000_000, output_tokens=0,
+    )
+    assert abs(cost - 3.00) < 1e-6, f"unknown model should use sonnet, got ${cost}"
+
+    # Empty / None → 0 cost (sonnet fam, but zero tokens)
+    assert cost_guard.compute_cost_from_usage(model=None) == 0.0
+
+
+# ----------------------------------------------------------------------------
+# 5. Transcript audit (synthetic JSONL)
+# ----------------------------------------------------------------------------
+def test_audit_transcript_synthetic() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        transcript = Path(tmp) / "fake_session.jsonl"
+        rows = [
+            # Sonnet — small, well under S2 ceiling
+            {"message": {"model": "claude-sonnet-4-7", "usage": {
+                "input_tokens": 1000, "output_tokens": 500,
+                "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0,
+            }}},
+            # Opus — would breach S4 at 1M+1M ($90)
+            {"message": {"model": "claude-opus-4-7", "usage": {
+                "input_tokens": 1_000_000, "output_tokens": 1_000_000,
+            }}},
+            # Haiku — tiny
+            {"message": {"model": "claude-haiku-4-5", "usage": {
+                "input_tokens": 100, "output_tokens": 50,
+            }}},
+            # No usage block — should be skipped silently
+            {"message": {"model": "sonnet"}},
+            # No message block — should be skipped silently
+            {"type": "user", "content": "hello"},
+        ]
+        with open(transcript, "w", encoding="utf-8") as f:
+            for r in rows:
+                f.write(json.dumps(r) + "\n")
+
+        report = cost_guard.audit_transcript(transcript)
+        assert report["row_count"] == 3, f"expected 3 audited rows, got {report['row_count']}"
+        # Total cost: sonnet ~$0.0105 + opus $90 + haiku ~$0.00035 = ~$90.011
+        assert 89.0 < report["total_cost_usd"] < 91.0, f"unexpected total: {report['total_cost_usd']}"
+        assert report["by_model"]["sonnet"]["calls"] == 1
+        assert report["by_model"]["opus"]["calls"] == 1
+        assert report["by_model"]["haiku"]["calls"] == 1
+        assert report["would_breach_count"] >= 1, "opus row should have breached S4"
+        # Top message cost: opus 1M+1M = $90
+        assert report["top_message_costs"][0]["model"] == "opus"
+        assert report["top_message_costs"][0]["would_breach"] is True
+
+
+def test_audit_transcript_missing() -> None:
+    report = cost_guard.audit_transcript("/nonexistent/path/foo.jsonl")
+    assert "error" in report
+    assert report["row_count"] == 0
+
+
+def test_audit_transcript_partial_corruption() -> None:
+    """Bad lines should be collected as errors, not crash the audit."""
+    with tempfile.TemporaryDirectory() as tmp:
+        transcript = Path(tmp) / "corrupt.jsonl"
+        with open(transcript, "w", encoding="utf-8") as f:
+            f.write('{"message":{"model":"sonnet","usage":{"input_tokens":100,"output_tokens":50}}}\n')
+            f.write('this is not json\n')
+            f.write('{"message":{"model":"haiku","usage":{"input_tokens":50}}}\n')
+        report = cost_guard.audit_transcript(transcript)
+        assert report["row_count"] == 2
+        assert len(report["errors"]) == 1
+
+
+# ----------------------------------------------------------------------------
+# 6. Top spenders + breach filter + since filter
+# ----------------------------------------------------------------------------
+def test_top_spenders_by_agent() -> None:
+    rows = [
+        {"agent": "alpha", "tier": "S2", "actual_cost_usd": 0.50, "budget_usd": 0.10, "breach": True},
+        {"agent": "alpha", "tier": "S2", "actual_cost_usd": 0.05, "budget_usd": 0.10, "breach": False},
+        {"agent": "beta",  "tier": "S2", "actual_cost_usd": 0.20, "budget_usd": 0.10, "breach": True},
+        {"agent": "gamma", "tier": "S3", "actual_cost_usd": 0.30, "budget_usd": 0.50, "breach": False},
+    ]
+    top = cost_guard.top_spenders(by="agent", n=10, rows=rows)
+    assert len(top) == 3
+    # alpha leads at $0.55
+    assert top[0]["agent"] == "alpha"
+    assert top[0]["fires"] == 2
+    assert abs(top[0]["actual_usd"] - 0.55) < 1e-6
+    assert top[0]["breaches"] == 1
+
+
+def test_top_spenders_by_tier() -> None:
+    rows = [
+        {"agent": "x", "tier": "S2", "actual_cost_usd": 0.10, "budget_usd": 0.10, "breach": False},
+        {"agent": "y", "tier": "S2", "actual_cost_usd": 0.20, "budget_usd": 0.10, "breach": True},
+        {"agent": "z", "tier": "S3", "actual_cost_usd": 0.05, "budget_usd": 0.50, "breach": False},
+    ]
+    top = cost_guard.top_spenders(by="tier", n=2, rows=rows)
+    assert len(top) == 2
+    assert top[0]["tier"] == "S2"
+    assert top[0]["fires"] == 2
+
+
+def test_top_spenders_invalid_by() -> None:
+    try:
+        cost_guard.top_spenders(by="nonsense", rows=[])
+    except ValueError:
+        return  # expected
+    raise AssertionError("expected ValueError on invalid 'by'")
+
+
+def test_breach_rows() -> None:
+    rows = [
+        {"agent": "a", "breach": False},
+        {"agent": "b", "breach": True},
+        {"agent": "c", "breach": True},
+    ]
+    out = cost_guard.breach_rows(rows=rows)
+    assert len(out) == 2
+    assert all(r["breach"] for r in out)
+
+
+def test_receipts_since() -> None:
+    rows = [
+        {"agent": "a", "ts": "2026-04-01T00:00:00Z"},
+        {"agent": "b", "ts": "2026-05-08T00:00:00Z"},
+        {"agent": "c", "ts": "2026-05-09T00:00:00Z"},
+    ]
+    out = cost_guard.receipts_since("2026-05-01", rows=rows)
+    assert len(out) == 2
+    assert {r["agent"] for r in out} == {"b", "c"}
+
+
+# ----------------------------------------------------------------------------
+# 7. rollup_efficiency on empty input
+# ----------------------------------------------------------------------------
+def test_rollup_empty() -> None:
+    roll = cost_guard.rollup_efficiency(rows=[])
+    assert roll["receipt_count"] == 0
+    assert roll["total_actual_usd"] == 0.0
+    assert roll["breach_count"] == 0
+    assert roll["by_agent"] == {}
+
+
+# ----------------------------------------------------------------------------
 # Entry
 # ----------------------------------------------------------------------------
 def main() -> int:
     cases = [
-        ("pure_functions",     test_pure_functions),
-        ("receipt_roundtrip",  test_receipt_roundtrip),
-        ("invoke_live_breach", test_invoke_live_breach),
+        ("pure_functions",            test_pure_functions),
+        ("receipt_roundtrip",         test_receipt_roundtrip),
+        ("invoke_live_breach",        test_invoke_live_breach),
+        ("compute_cost_from_usage",   test_compute_cost_from_usage),
+        ("audit_transcript_synth",    test_audit_transcript_synthetic),
+        ("audit_transcript_missing",  test_audit_transcript_missing),
+        ("audit_transcript_corrupt",  test_audit_transcript_partial_corruption),
+        ("top_spenders_by_agent",     test_top_spenders_by_agent),
+        ("top_spenders_by_tier",      test_top_spenders_by_tier),
+        ("top_spenders_invalid_by",   test_top_spenders_invalid_by),
+        ("breach_rows",               test_breach_rows),
+        ("receipts_since",            test_receipts_since),
+        ("rollup_empty",              test_rollup_empty),
     ]
     failed: list[str] = []
     for name, fn in cases:

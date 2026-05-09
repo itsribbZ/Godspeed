@@ -2,6 +2,46 @@
 
 All notable changes to godspeed are tracked here. Versioning follows [SemVer](https://semver.org/).
 
+## [2.4.3] - 2026-05-08
+
+Cost Guard becomes the headline feature. Multi-agent dispatch becomes runnable for plugin users.
+
+### Fixed
+- `commands/brain-score.md:18` — replaced `$TOKE_ROOT` with `${CLAUDE_PLUGIN_ROOT}`. The slash command was a copy from internal docs and threw an undefined-variable error on every plugin install. Now resolves to the plugin's own automations tree.
+- `agent_runner.py` LIVE-dispatch path is no longer dead-on-arrival in the plugin tree. v2.4.0 shipped 1,168 LOC of dispatcher code that referenced `automations/director/` — a directory that wasn't in the plugin curation. Every `invoke()` call raised `FileNotFoundError` for plugin users. **Resolved by shipping a starter `automations/director/` (see Added below).**
+
+### Added
+- **`automations/director/` starter set** — three production-grade research agents, public-safe and fully scrubbed:
+  - `calliope_synthesizer.json` — web + local research synthesis with T1-T3 citations, ≤3K-token output discipline, parallel-safe
+  - `clio_archaeologist.json` — codebase archaeology with grep-verified file:line receipts, dead-code detection, dependency-graph mapping
+  - `urania_analyst.json` — numeric telemetry analysis where every number ships with its reproducible bash/python command
+  - Plus `agents_manifest.json`, `agents/_SCHEMA.md`, and a top-level `README.md` explaining how to add your own agents
+  - Verified: `agent_runner.py list` returns 3 agents; `agent_runner.py invoke calliope_synthesizer --mode dry-run` returns a valid DRY_RUN envelope
+- **Cost Guard CLI growth — 4 new subcommands** turn `cost_guard.py` from an internal library into a public spend-audit tool:
+  - `cost_guard.py audit <transcript>` — point at any Claude Code session JSONL, get a per-message cost report with would-be tier breaches identified. Smoke-tested against a real 241-message transcript: $157.54 total, 3 would-breach. **This is the wedge for "Claude API spend audit" as a public tool.**
+  - `cost_guard.py top --by agent|tier --n N` — top spenders sorted by actual USD, with fire counts and breach rates
+  - `cost_guard.py breaches` — filter receipts to only the rows where the tier soft-cap was tripped
+  - `cost_guard.py since <iso-date>` — date-windowed receipt filter (e.g. `since 2026-05-04`)
+- **Pricing constants** for the Claude 4.x family in `cost_guard.py:PRICING_USD_PER_MTOK` — haiku/sonnet/opus input + output + cache-read + cache-write rates, used by `compute_cost_from_usage()` and `audit_transcript()`. Updateable as Anthropic publishes pricing changes.
+- **`compute_cost_from_usage()`** — new shared pricing math. Maps verbose model IDs (`claude-sonnet-4-7`, etc.) to the haiku/sonnet/opus family, then applies per-token-class pricing. Rounded to 6 decimals.
+- **`audit_transcript()`** — reads any Claude Code transcript JSONL, computes per-message cost, identifies tier breaches, returns aggregated summary with top-5 most expensive messages.
+- **`top_spenders(by, n)` / `breach_rows()` / `receipts_since(date)`** — Python API matching the new CLI subcommands.
+
+### Tests
+- **`test_cost_guard.py` grew from 3 tests to 13 tests, all passing.** New coverage:
+  - `compute_cost_from_usage` math across haiku/sonnet/opus, cache pricing, unknown-model fallback
+  - `audit_transcript` against a synthetic JSONL (3 valid rows + 2 skip cases)
+  - `audit_transcript` against a missing file (error path)
+  - `audit_transcript` against a corrupted JSONL (partial-corruption tolerance — bad lines logged, good lines counted)
+  - `top_spenders` by agent and by tier, plus invalid-`by` ValueError path
+  - `breach_rows` filter
+  - `receipts_since` ISO date filter
+  - `rollup_efficiency` on empty input
+
+### Notes
+- Behavior of execution mode (the `godspeed` keyword) unchanged. Brain classifier, hooks, Phase -1 tick, Phase 0.5 tier check, agent dispatch envelope — all unchanged. This release upgrades the introspection + audit surface and makes the multi-agent system actually runnable for plugin users.
+- The `automations/director/agents/` starter set is intentionally minimal — three research-division read-only agents. Add your own under `agents/<name>.json` and register in `agents_manifest.json`. See `automations/director/README.md`.
+
 ## [2.4.2] - 2026-05-08
 ### Fixed
 - `/godspeed-info` slash command now renders the current pipeline diagram. Previously it delegated to the `godspeed` skill's `SKILL.md` "Info Mode" section and rendered a stale **v4.2-era** diagram missing every pipeline phase shipped in v2.4.0 — Brain tier check (Phase 0.5) absent, Cost Guard (Phase 3i) absent, the tier→USD budget table absent. The diagram is now baked directly into `commands/godspeed-info.md`, so the command renders the same content regardless of which `godspeed` skill is loaded locally (fixes the user-level-skill shadowing case where a non-plugin `godspeed` skill could leak into the rendered output).

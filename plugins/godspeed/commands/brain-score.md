@@ -15,7 +15,7 @@ Arguments received: **$ARGUMENTS**
 Run this exact command via the Bash tool and echo the full output verbatim — no preamble, no rewrite, no summary. Users want the raw classifier signal.
 
 ```bash
-python $TOKE_ROOT/automations/brain/brain_cli.py score "$ARGUMENTS"
+python ${CLAUDE_PLUGIN_ROOT}/automations/brain/brain_cli.py score "$ARGUMENTS"
 ```
 
 ## Output contract
