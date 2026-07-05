@@ -92,7 +92,7 @@ Four steps from fresh install to running Godspeed on a prompt.
 **Verify either install is live:**
 
 ```
-/brain-score "refactor my distributed cache across 4 files"
+/brain-score "refactor the auth flow across src/auth.py, src/session.py, src/middleware.py, and src/api.py to use the strategy pattern"
 → Tier: S4 | Model: opus | Effort: high
 ```
 

@@ -11,7 +11,7 @@ The evaluation harness (`automations/brain/eval/brain_vs_baselines.py`) compares
 ```json
 [
   {"prompt": "list files here", "expected": "S0"},
-  {"prompt": "refactor my distributed cache across 4 files", "expected": "S4"}
+  {"prompt": "refactor the auth flow across src/auth.py, src/session.py, src/middleware.py, and src/api.py to use the strategy pattern", "expected": "S4"}
 ]
 ```
 
@@ -46,7 +46,7 @@ After install:
 
 1. Add the hook block the installer prints to `~/.claude/settings.json`.
 2. Set `TOKE_ROOT` in your shell profile.
-3. Start a new Claude Code session and try `/brain-score "refactor my distributed cache across 4 files"` — expect `S4 / opus / high`.
+3. Start a new Claude Code session and try `/brain-score "refactor the auth flow across src/auth.py, src/session.py, src/middleware.py, and src/api.py to use the strategy pattern"` — expect `S4 / opus / high`.
 
 ### Requirements
 

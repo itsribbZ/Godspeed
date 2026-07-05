@@ -165,7 +165,7 @@ Next steps:
 
 4. Start a new Claude Code session and try it:
 
-     /brain-score "refactor my distributed cache across 4 files"
+     /brain-score "refactor the auth flow across src/auth.py, src/session.py, src/middleware.py, and src/api.py to use the strategy pattern"
      # -> should classify as S4 (Opus)
 
      godspeed
